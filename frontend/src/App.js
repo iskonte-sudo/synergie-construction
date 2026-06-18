@@ -26,7 +26,7 @@ function Layout() {
     <>
       <ScrollToTop />
       <Header />
-      <main className="pt-[72px]">
+      <main className="pt-[110px] lg:pt-[112px]">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/a-propos" element={<About />} />

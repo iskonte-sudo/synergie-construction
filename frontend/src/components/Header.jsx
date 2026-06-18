@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, Phone, ChevronDown, ArrowUpRight } from 'lucide-react';
-import { navigation, company } from '../data/mock';
+import { Menu, X, Phone, Mail, ChevronDown, ArrowUpRight, Facebook, Instagram, Linkedin, Youtube, MessageCircle, Music2 } from 'lucide-react';
+import { navigation, company, socials } from '../data/mock';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
 import logo from '../assets/logo.png';
+
+const SOCIAL_ICONS = { Facebook, Instagram, Linkedin, Youtube, MessageCircle, Music2 };
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -27,10 +29,43 @@ export default function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white shadow-md py-2' : 'bg-white/95 backdrop-blur-sm py-3'
+        scrolled ? 'bg-white shadow-md' : 'bg-white/95 backdrop-blur-sm'
       }`}
     >
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 flex items-center justify-between gap-6">
+      {/* Top utility bar */}
+      <div className={`bg-[#0A2540] text-white text-xs transition-all duration-300 overflow-hidden ${scrolled ? 'max-h-0 opacity-0' : 'max-h-12 opacity-100'}`}>
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-2 flex items-center justify-between gap-4">
+          <div className="hidden md:flex items-center gap-5">
+            <a href={`tel:${company.phone}`} className="inline-flex items-center gap-2 hover:text-[#FFB800] transition-colors">
+              <Phone size={12} /> {company.phoneDisplay}
+            </a>
+            <a href={`mailto:${company.email}`} className="hidden lg:inline-flex items-center gap-2 hover:text-[#FFB800] transition-colors">
+              <Mail size={12} /> {company.email}
+            </a>
+          </div>
+          <div className="flex items-center gap-1 ml-auto">
+            <span className="hidden sm:inline text-white/60 mr-2 uppercase tracking-widest text-[10px]">Suivez-nous :</span>
+            {socials.map((s) => {
+              const Icon = SOCIAL_ICONS[s.icon] || Facebook;
+              return (
+                <a
+                  key={s.name}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.name}
+                  title={s.name}
+                  className="w-7 h-7 flex items-center justify-center hover:bg-[#FFB800] hover:text-[#0A2540] transition-colors"
+                >
+                  <Icon size={13} />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className={`max-w-[1400px] mx-auto px-4 lg:px-8 flex items-center justify-between gap-6 transition-all duration-300 ${scrolled ? 'py-2' : 'py-3'}`}>
         {/* Logo */}
         <Link to="/" className="flex items-center shrink-0">
           <img src={logo} alt="Synergies Construction Group" className="h-14 w-auto object-contain" />

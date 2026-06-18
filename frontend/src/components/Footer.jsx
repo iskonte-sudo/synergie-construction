@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin, Twitter, ArrowRight, Send } from 'lucide-react';
-import { company, services } from '../data/mock';
+import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin, Twitter, Youtube, MessageCircle, Music2, ArrowRight, Send } from 'lucide-react';
+import { company, services, socials } from '../data/mock';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
 import logo from '../assets/logo.png';
+
+const SOCIAL_ICONS = { Facebook, Instagram, Linkedin, Twitter, Youtube, MessageCircle, Music2 };
 
 export default function Footer() {
   const { openModal } = useQuoteModal();
@@ -36,16 +38,23 @@ export default function Footer() {
           <p className="text-sm leading-relaxed text-gray-400 mb-6">
             Entreprise spécialisée dans les études, la conception et la réalisation de projets de construction. Nous accompagnons particuliers, entreprises et institutions à chaque étape.
           </p>
-          <div className="flex gap-3">
-            {[Facebook, Instagram, Linkedin, Twitter].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="w-10 h-10 flex items-center justify-center border border-gray-700 hover:border-[#FFB800] hover:bg-[#FFB800] hover:text-[#0A2540] text-gray-400 transition-colors"
-              >
-                <Icon size={16} />
-              </a>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {socials.map((s) => {
+              const Icon = SOCIAL_ICONS[s.icon] || Facebook;
+              return (
+                <a
+                  key={s.name}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.name}
+                  title={s.name}
+                  className="w-10 h-10 flex items-center justify-center border border-gray-700 hover:border-[#FFB800] hover:bg-[#FFB800] hover:text-[#0A2540] text-gray-400 transition-colors"
+                >
+                  <Icon size={16} />
+                </a>
+              );
+            })}
           </div>
         </div>
 

@@ -15,6 +15,15 @@ export const company = {
   teamMembers: 45,
 };
 
+export const socials = [
+  { name: 'Facebook', icon: 'Facebook', url: 'https://www.facebook.com/synergieconstruction' },
+  { name: 'Instagram', icon: 'Instagram', url: 'https://www.instagram.com/synergieconstruction' },
+  { name: 'LinkedIn', icon: 'Linkedin', url: 'https://www.linkedin.com/company/synergieconstruction' },
+  { name: 'WhatsApp', icon: 'MessageCircle', url: 'https://wa.me/221771658042' },
+  { name: 'YouTube', icon: 'Youtube', url: 'https://www.youtube.com/@synergieconstruction' },
+  { name: 'TikTok', icon: 'Music2', url: 'https://www.tiktok.com/@synergieconstruction' },
+];
+
 export const navigation = [
   { label: 'Accueil', path: '/' },
   { label: 'À propos', path: '/a-propos' },
