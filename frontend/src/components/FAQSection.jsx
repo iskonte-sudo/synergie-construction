@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { faqs } from '../data/mock';
+import { faqs, company } from '../data/mock';
 
 export default function FAQSection() {
   const [open, setOpen] = useState(0);
@@ -18,7 +18,7 @@ export default function FAQSection() {
           <div className="mt-8 p-6 bg-[#0A2540] text-white">
             <div className="text-sm uppercase tracking-wider text-[#FFB800] font-semibold mb-2">Besoin d'aide ?</div>
             <div className="font-heading text-2xl font-bold mb-3">Parlez à un expert</div>
-            <a href="tel:+2250701234567" className="inline-block text-[#FFB800] font-bold text-xl hover:underline">+225 07 01 23 45 67</a>
+            <a href={`tel:${company.phone}`} className="inline-block text-[#FFB800] font-bold text-xl hover:underline">{company.phoneDisplay}</a>
           </div>
         </div>
         <div className="lg:col-span-7">

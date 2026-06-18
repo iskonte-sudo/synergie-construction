@@ -67,7 +67,7 @@ export default function Contact() {
               <div className="h-64 overflow-hidden border border-gray-200">
                 <iframe
                   title="Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15890.0!2d-3.97!3d5.34!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0!2zNcKwMjAnMzQuNCJOIDPCsDU4JzEyLjAiVw!5e0!3m2!1sen!2sci!4v1"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15512.0!2d-17.4404!3d14.7651!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zUGFyY2VsbGVzIEFzc2FpbmllcywgRGFrYXIsIFPDqW7DqWdhbA!5e0!3m2!1sfr!2ssn!4v1"
                   width="100%"
                   height="100%"
                   loading="lazy"

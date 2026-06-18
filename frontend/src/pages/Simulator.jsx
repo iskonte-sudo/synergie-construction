@@ -413,9 +413,9 @@ function Step6({ data, setData }) {
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input label="Nom complet" required value={c.name} onChange={(v) => upd('name', v)} placeholder="Jean Dupont" />
-        <Input label="Téléphone" required value={c.phone} onChange={(v) => upd('phone', v)} type="tel" placeholder="+225 ..." />
+        <Input label="Téléphone" required value={c.phone} onChange={(v) => upd('phone', v)} type="tel" placeholder="+221 ..." />
         <Input label="Email" required type="email" value={c.email} onChange={(v) => upd('email', v)} placeholder="vous@email.com" />
-        <Input label="Adresse / Localisation" value={c.address} onChange={(v) => upd('address', v)} placeholder="Cocody, Abidjan" />
+        <Input label="Adresse / Localisation" value={c.address} onChange={(v) => upd('address', v)} placeholder="Parcelles Assainies, Dakar" />
         <div className="md:col-span-2">
           <label className="block text-xs font-semibold uppercase tracking-wider text-[#0A2540] mb-1.5">Notes complémentaires</label>
           <textarea

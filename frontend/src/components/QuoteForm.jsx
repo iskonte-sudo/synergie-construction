@@ -35,7 +35,7 @@ export default function QuoteForm({ compact = false, title = 'Demandez votre dev
           <input name="name" required value={form.name} onChange={onChange} type="text" className="form-input" placeholder="Votre nom" />
         </Field>
         <Field label="Téléphone" required>
-          <input name="phone" required value={form.phone} onChange={onChange} type="tel" className="form-input" placeholder="+225 ..." />
+          <input name="phone" required value={form.phone} onChange={onChange} type="tel" className="form-input" placeholder="+221 ..." />
         </Field>
         <Field label="Email" required>
           <input name="email" required value={form.email} onChange={onChange} type="email" className="form-input" placeholder="vous@email.com" />

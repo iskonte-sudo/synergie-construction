@@ -3,7 +3,7 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { CheckCircle2, ArrowUpRight, Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck } from 'lucide-react';
 import PageBanner from '../components/PageBanner';
 import QuoteForm from '../components/QuoteForm';
-import { services, process as steps } from '../data/mock';
+import { services, process as steps, company } from '../data/mock';
 
 const iconMap = { Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck };
 
@@ -49,7 +49,7 @@ export default function ServiceDetail() {
               <div className="relative">
                 <div className="text-xs uppercase tracking-widest text-[#FFB800] font-semibold">Besoin d'aide ?</div>
                 <div className="font-heading text-2xl font-bold mt-2 leading-tight">Parlez à un expert dès maintenant</div>
-                <a href="tel:+2250701234567" className="text-[#FFB800] font-bold text-lg block mt-3">+225 07 01 23 45 67</a>
+                <a href={`tel:${company.phone}`} className="text-[#FFB800] font-bold text-lg block mt-3">{company.phoneDisplay}</a>
                 <Link to="/contact" className="btn-primary mt-5 text-sm"><ArrowUpRight size={16} /> Demander un devis</Link>
               </div>
             </div>
