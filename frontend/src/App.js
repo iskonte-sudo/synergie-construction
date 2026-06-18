@@ -11,6 +11,7 @@ import Services from './pages/Services';
 import ServiceDetail from './pages/ServiceDetail';
 import Projects from './pages/Projects';
 import Contact from './pages/Contact';
+import Simulator from './pages/Simulator';
 
 function ScrollToTop() {
   const { pathname } = useLocation();

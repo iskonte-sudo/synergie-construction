@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, ChevronDown, ArrowUpRight } from 'lucide-react';
 import { navigation, company } from '../data/mock';
+import logo from '../assets/logo.png';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -29,14 +30,8 @@ export default function Header() {
     >
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 flex items-center justify-between gap-6">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 shrink-0">
-          <div className="w-12 h-12 bg-[#0A2540] flex items-center justify-center rounded-sm">
-            <span className="text-[#FFB800] font-heading font-extrabold text-xl tracking-tighter">SC</span>
-          </div>
-          <div className="hidden sm:block leading-tight">
-            <div className="font-heading font-bold text-xl text-[#0A2540]">Synergies</div>
-            <div className="text-[10px] uppercase tracking-[0.2em] text-[#FFB800] font-semibold">Construction Group</div>
-          </div>
+        <Link to="/" className="flex items-center shrink-0">
+          <img src={logo} alt="Synergies Construction Group" className="h-14 w-auto object-contain" />
         </Link>
 
         {/* Desktop Nav */}

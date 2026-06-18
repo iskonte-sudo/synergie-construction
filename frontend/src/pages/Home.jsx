@@ -7,6 +7,7 @@ import FeaturesSection from '../components/FeaturesSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import FAQSection from '../components/FAQSection';
 import QuoteForm from '../components/QuoteForm';
+import Simulator from './Simulator';
 import { company, process as steps } from '../data/mock';
 
 export default function Home() {
@@ -57,6 +58,9 @@ export default function Home() {
 
       <ServicesGrid />
       <FeaturesSection />
+
+      {/* Project Simulator embedded */}
+      <Simulator embedded />
 
       {/* CTA + Form */}
       <section className="relative py-20 lg:py-28 overflow-hidden">

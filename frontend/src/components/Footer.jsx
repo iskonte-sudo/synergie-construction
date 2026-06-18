@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin, Twitter, ArrowRight, Send } from 'lucide-react';
 import { company, services } from '../data/mock';
+import logo from '../assets/logo.png';
 
 export default function Footer() {
   return (
@@ -27,14 +28,8 @@ export default function Footer() {
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
         {/* Brand */}
         <div className="lg:col-span-4">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-14 h-14 bg-[#FFB800] flex items-center justify-center">
-              <span className="text-[#0A2540] font-heading font-extrabold text-2xl">SC</span>
-            </div>
-            <div>
-              <div className="font-heading font-bold text-xl text-white">Synergies</div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-[#FFB800] font-semibold">Construction Group</div>
-            </div>
+          <div className="mb-5">
+            <img src={logo} alt="Synergies Construction Group" className="h-16 w-auto object-contain" />
           </div>
           <p className="text-sm leading-relaxed text-gray-400 mb-6">
             Entreprise spécialisée dans les études, la conception et la réalisation de projets de construction. Nous accompagnons particuliers, entreprises et institutions à chaque étape.

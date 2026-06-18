@@ -251,3 +251,50 @@ export const process = [
   { step: '04', title: 'Ajustements et validation', description: 'Affinement du projet selon vos retours.' },
   { step: '05', title: 'Livraison finale', description: 'Remise des clés et accompagnement post-livraison.' },
 ];
+
+// ---- Project Simulator data ----
+
+export const projectTypes = [
+  { id: 'villa', label: 'Villa', icon: 'Home', baseCostPerSqm: 280000, monthsPerSqm: 0.012 },
+  { id: 'immeuble', label: 'Immeuble', icon: 'Building2', baseCostPerSqm: 350000, monthsPerSqm: 0.015 },
+  { id: 'bureau', label: 'Bureau', icon: 'Briefcase', baseCostPerSqm: 320000, monthsPerSqm: 0.013 },
+  { id: 'commerce', label: 'Commerce', icon: 'Store', baseCostPerSqm: 300000, monthsPerSqm: 0.011 },
+  { id: 'hotel', label: 'Hôtel', icon: 'Hotel', baseCostPerSqm: 420000, monthsPerSqm: 0.018 },
+  { id: 'entrepot', label: 'Entrepôt', icon: 'Warehouse', baseCostPerSqm: 180000, monthsPerSqm: 0.008 },
+  { id: 'renovation', label: 'Rénovation', icon: 'Wrench', baseCostPerSqm: 150000, monthsPerSqm: 0.009 },
+];
+
+export const surfaceOptions = [
+  { id: 's1', label: 'Moins de 100 m²', value: 80 },
+  { id: 's2', label: '100 à 250 m²', value: 175 },
+  { id: 's3', label: '250 à 500 m²', value: 375 },
+  { id: 's4', label: '500 à 1000 m²', value: 750 },
+  { id: 's5', label: 'Plus de 1000 m²', value: 1500 },
+];
+
+export const prestationOptions = [
+  { id: 'faisabilite', label: 'Étude de faisabilité', icon: 'Search', recommends: 'conseil-technique' },
+  { id: 'plans-archi', label: 'Plans architecturaux', icon: 'PenTool', recommends: 'plans-2d-3d' },
+  { id: 'modelisation-3d', label: 'Modélisation 3D', icon: 'Box', recommends: 'plans-2d-3d' },
+  { id: 'rendus', label: 'Rendus photoréalistes', icon: 'Image', recommends: 'plans-2d-3d' },
+  { id: 'controle-qualite', label: 'Contrôle qualité', icon: 'ShieldCheck', recommends: 'suivi-controle' },
+  { id: 'suivi-chantier', label: 'Suivi de chantier', icon: 'HardHat', recommends: 'suivi-controle' },
+  { id: 'coordination', label: 'Coordination des intervenants', icon: 'Users', recommends: 'suivi-controle' },
+  { id: 'amoa', label: 'Assistance maîtrise d\'ouvrage', icon: 'ClipboardCheck', recommends: 'conseil-technique' },
+];
+
+export const budgetOptions = [
+  { id: 'b1', label: 'Moins de 25 millions FCFA', min: 0, max: 25 },
+  { id: 'b2', label: '25 à 50 millions FCFA', min: 25, max: 50 },
+  { id: 'b3', label: '50 à 100 millions FCFA', min: 50, max: 100 },
+  { id: 'b4', label: 'Plus de 100 millions FCFA', min: 100, max: 999 },
+];
+
+export const delaiOptions = [
+  { id: 'd1', label: 'Urgent (moins de 3 mois)', months: 2 },
+  { id: 'd2', label: '3 à 6 mois', months: 5 },
+  { id: 'd3', label: '6 à 12 mois', months: 9 },
+  { id: 'd4', label: '12 à 24 mois', months: 18 },
+  { id: 'd5', label: 'Plus de 24 mois', months: 28 },
+  { id: 'd6', label: 'Flexible', months: 12 },
+];
