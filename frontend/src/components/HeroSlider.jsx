@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { heroSlides, company } from '../data/mock';
+import { useQuoteModal } from '../contexts/QuoteModalContext';
 
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
+  const { openModal } = useQuoteModal();
 
   useEffect(() => {
     const t = setInterval(() => setActive((a) => (a + 1) % heroSlides.length), 6000);
@@ -38,9 +40,9 @@ export default function HeroSlider() {
               </h1>
               <p className="text-white/85 text-lg mt-6 max-w-xl">{heroSlides[active].subtitle}</p>
               <div className="flex flex-wrap gap-4 mt-8">
-                <Link to="/contact" className="btn-primary">
+                <button onClick={() => openModal()} className="btn-primary">
                   <ArrowUpRight size={18} /> Demander un devis
-                </Link>
+                </button>
                 <Link to="/services" className="btn-outline-light">Nos services</Link>
               </div>
             </div>

@@ -2,14 +2,15 @@ import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { CheckCircle2, ArrowUpRight, Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck } from 'lucide-react';
 import PageBanner from '../components/PageBanner';
-import QuoteForm from '../components/QuoteForm';
-import { services, process as steps, company } from '../data/mock';
+import { services, process as steps, company, serviceForms } from '../data/mock';
+import { useQuoteModal } from '../contexts/QuoteModalContext';
 
 const iconMap = { Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck };
 
 export default function ServiceDetail() {
   const { serviceId } = useParams();
   const service = services.find((s) => s.id === serviceId);
+  const { openModal } = useQuoteModal();
   if (!service) return <Navigate to="/services" replace />;
   const Icon = iconMap[service.icon] || Hammer;
   const others = services.filter((s) => s.id !== service.id).slice(0, 5);
@@ -50,7 +51,7 @@ export default function ServiceDetail() {
                 <div className="text-xs uppercase tracking-widest text-[#FFB800] font-semibold">Besoin d'aide ?</div>
                 <div className="font-heading text-2xl font-bold mt-2 leading-tight">Parlez à un expert dès maintenant</div>
                 <a href={`tel:${company.phone}`} className="text-[#FFB800] font-bold text-lg block mt-3">{company.phoneDisplay}</a>
-                <Link to="/contact" className="btn-primary mt-5 text-sm"><ArrowUpRight size={16} /> Demander un devis</Link>
+                <button onClick={() => openModal(service.id)} className="btn-primary mt-5 text-sm"><ArrowUpRight size={16} /> Demander un devis</button>
               </div>
             </div>
           </aside>
@@ -94,9 +95,24 @@ export default function ServiceDetail() {
         </div>
       </section>
 
-      <section className="py-20 bg-[#F5F7FA]">
-        <div className="max-w-3xl mx-auto px-4">
-          <QuoteForm subtitle="Démarrer Maintenant" title="Demandez un devis pour ce service" />
+      <section className="relative py-20 bg-[#0A2540] text-white overflow-hidden">
+        <div className="absolute inset-0 dot-pattern opacity-20" />
+        <div className="relative max-w-3xl mx-auto px-4 text-center">
+          <div className="section-label justify-center inline-flex mb-4">Démarrer Maintenant</div>
+          <h2 className="font-heading text-3xl lg:text-5xl font-extrabold uppercase leading-tight">
+            Prêt à lancer votre projet de {service.title.toLowerCase()} ?
+          </h2>
+          <p className="text-white/80 mt-4 max-w-xl mx-auto">
+            Remplissez un formulaire dédié à ce service et recevez un devis détaillé sous 24h.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <button onClick={() => openModal(service.id)} className="btn-primary">
+              <ArrowUpRight size={18} /> Demander un devis pour ce service
+            </button>
+            <a href={`tel:${company.phone}`} className="btn-outline-light">
+              Nous appeler
+            </a>
+          </div>
         </div>
       </section>
     </>

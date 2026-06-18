@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { MapPin, Calendar, ArrowUpRight, X } from 'lucide-react';
 import PageBanner from '../components/PageBanner';
 import { projects } from '../data/mock';
+import { useQuoteModal } from '../contexts/QuoteModalContext';
 
 const categories = ['Tous', 'Résidentiel', 'Commercial', 'Industriel', 'Institutionnel', 'Rénovation'];
 
 export default function Projects() {
   const [filter, setFilter] = useState('Tous');
   const [active, setActive] = useState(null);
+  const { openModal } = useQuoteModal();
   const filtered = filter === 'Tous' ? projects : projects.filter((p) => p.category === filter);
 
   return (
@@ -67,7 +69,7 @@ export default function Projects() {
       <section className="py-16 bg-[#0A2540] text-white">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <h3 className="font-heading text-3xl lg:text-4xl font-bold uppercase max-w-2xl">Votre projet mérite de figurer dans notre portfolio</h3>
-          <Link to="/contact" className="btn-primary"><ArrowUpRight size={18} /> Démarrer mon projet</Link>
+          <button onClick={() => openModal()} className="btn-primary"><ArrowUpRight size={18} /> Démarrer mon projet</button>
         </div>
       </section>
 
@@ -87,9 +89,9 @@ export default function Projects() {
                 <span className="flex items-center gap-1.5"><Calendar size={14} /> {active.year}</span>
               </div>
               <p className="text-gray-600 mt-5 leading-relaxed">{active.description}</p>
-              <Link to="/contact" onClick={() => setActive(null)} className="btn-primary mt-6">
+              <button onClick={() => { setActive(null); openModal(); }} className="btn-primary mt-6">
                 <ArrowUpRight size={18} /> Projet similaire ? Demander un devis
-              </Link>
+              </button>
             </div>
           </div>
         </div>

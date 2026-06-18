@@ -298,3 +298,134 @@ export const delaiOptions = [
   { id: 'd5', label: 'Plus de 24 mois', months: 28 },
   { id: 'd6', label: 'Flexible', months: 12 },
 ];
+
+// ---- Service-specific form configurations ----
+// Each service has a custom set of fields appended to the common ones (name, phone, email, notes).
+
+const COMMON_FIELDS = [
+  { name: 'name', label: 'Nom complet', type: 'text', required: true, placeholder: 'Votre nom complet', col: 1 },
+  { name: 'phone', label: 'Téléphone', type: 'tel', required: true, placeholder: '+221 ...', col: 1 },
+  { name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'vous@email.com', col: 2 },
+];
+
+export const serviceForms = {
+  // Generic devis form (no specific service)
+  default: {
+    title: 'Demandez votre devis gratuit',
+    subtitle: 'Parlez-nous de votre projet',
+    icon: 'FileText',
+    fields: [
+      ...COMMON_FIELDS,
+      { name: 'projectType', label: 'Type de projet', type: 'select', options: ['Maison', 'Villa', 'Immeuble', 'Bâtiment commercial', 'Bureau', 'Rénovation', 'VRD', 'Autre'], col: 1 },
+      { name: 'address', label: 'Adresse / Localisation', type: 'text', placeholder: 'Ville, quartier', col: 1 },
+      { name: 'budget', label: 'Budget estimatif', type: 'text', placeholder: 'Ex: 25 000 000 FCFA', col: 2 },
+      { name: 'notes', label: 'Description du projet', type: 'textarea', placeholder: 'Décrivez brièvement votre projet...', full: true },
+    ],
+  },
+
+  'etudes-fondations': {
+    title: 'Étude de fondations',
+    subtitle: 'Devis pour étude et plans de fondations',
+    icon: 'Hammer',
+    fields: [
+      ...COMMON_FIELDS,
+      { name: 'typeEtude', label: 'Type d\'étude souhaitée', type: 'select', required: true, options: ['Étude géotechnique', 'Dimensionnement des fondations', 'Calculs structuraux', 'Étude de stabilité', 'Étude complète'], col: 1 },
+      { name: 'typeBatiment', label: 'Type de bâtiment', type: 'select', options: ['Maison individuelle', 'Villa', 'Immeuble R+1', 'Immeuble R+2 et plus', 'Bâtiment commercial', 'Ouvrage industriel', 'Autre'], col: 1 },
+      { name: 'localisation', label: 'Localisation du terrain', type: 'text', placeholder: 'Ville, quartier', col: 2 },
+      { name: 'superficie', label: 'Superficie du terrain (m²)', type: 'text', placeholder: 'Ex: 500', col: 1 },
+      { name: 'niveaux', label: 'Nombre de niveaux prévus', type: 'select', options: ['RDC', 'R+1', 'R+2', 'R+3', 'R+4 et plus'], col: 1 },
+      { name: 'etudeSol', label: 'Étude de sol déjà réalisée ?', type: 'radio', options: ['Oui', 'Non', 'Je ne sais pas'], col: 2 },
+      { name: 'dateDemarrage', label: 'Date souhaitée de démarrage', type: 'date', col: 1 },
+      { name: 'documents', label: 'Documents disponibles', type: 'select', options: ['Plan architectural', 'Plan architectural + étude de sol', 'Croquis uniquement', 'Aucun document'], col: 1 },
+      { name: 'budget', label: 'Budget estimatif', type: 'text', placeholder: 'Ex: 5 000 000 FCFA', col: 2 },
+      { name: 'notes', label: 'Description du projet', type: 'textarea', placeholder: 'Précisions, contraintes particulières...', full: true },
+    ],
+  },
+
+  'suivi-controle': {
+    title: 'Suivi et contrôle des travaux',
+    subtitle: 'Devis pour supervision de chantier',
+    icon: 'HardHat',
+    fields: [
+      ...COMMON_FIELDS,
+      { name: 'phaseChantier', label: 'Phase actuelle du chantier', type: 'select', required: true, options: ['À démarrer', 'Fondations en cours', 'Gros œuvre', 'Second œuvre', 'Finitions', 'Réception'], col: 1 },
+      { name: 'typeOuvrage', label: 'Type d\'ouvrage', type: 'select', options: ['Villa', 'Immeuble', 'Bâtiment commercial', 'Ouvrage industriel', 'Lotissement', 'Autre'], col: 1 },
+      { name: 'surface', label: 'Surface du chantier (m²)', type: 'text', placeholder: 'Ex: 250', col: 2 },
+      { name: 'duree', label: 'Durée prévue du chantier', type: 'select', options: ['Moins de 3 mois', '3 à 6 mois', '6 à 12 mois', '12 à 24 mois', 'Plus de 24 mois'], col: 1 },
+      { name: 'niveauSupervision', label: 'Niveau de supervision', type: 'select', options: ['Visite hebdomadaire', 'Visite bi-hebdomadaire', 'Présence quotidienne', 'À la demande'], col: 1 },
+      { name: 'localisation', label: 'Localisation du chantier', type: 'text', placeholder: 'Ville, quartier', col: 2 },
+      { name: 'budget', label: 'Budget mensuel envisagé', type: 'text', placeholder: 'FCFA / mois', col: 1 },
+      { name: 'notes', label: 'Précisions sur la mission', type: 'textarea', placeholder: 'Contraintes, intervenants déjà mobilisés...', full: true },
+    ],
+  },
+
+  'renovation': {
+    title: 'Rénovation et Réhabilitation',
+    subtitle: 'Devis pour vos travaux de rénovation',
+    icon: 'Wrench',
+    fields: [
+      ...COMMON_FIELDS,
+      { name: 'typeBien', label: 'Type de bien', type: 'select', required: true, options: ['Maison', 'Villa', 'Appartement', 'Immeuble entier', 'Local commercial', 'Bureau', 'Autre'], col: 1 },
+      { name: 'typeTravaux', label: 'Type de travaux', type: 'select', required: true, options: ['Rénovation légère (peinture, sols)', 'Rénovation lourde (cloisons, plomberie, électricité)', 'Réhabilitation structurelle', 'Mise aux normes', 'Tous corps d\'état'], col: 1 },
+      { name: 'surface', label: 'Surface à rénover (m²)', type: 'text', placeholder: 'Ex: 120', col: 2 },
+      { name: 'anneeConstruction', label: 'Année de construction du bien', type: 'text', placeholder: 'Ex: 1995', col: 1 },
+      { name: 'bienOccupe', label: 'Bien occupé pendant les travaux ?', type: 'radio', options: ['Oui', 'Non', 'Partiellement'], col: 1 },
+      { name: 'localisation', label: 'Adresse du bien', type: 'text', placeholder: 'Ville, quartier', col: 2 },
+      { name: 'dateDemarrage', label: 'Date souhaitée de démarrage', type: 'date', col: 1 },
+      { name: 'budget', label: 'Budget envisagé', type: 'text', placeholder: 'Ex: 10 000 000 FCFA', col: 1 },
+      { name: 'notes', label: 'Description des travaux', type: 'textarea', placeholder: 'Pièces concernées, matériaux souhaités...', full: true },
+    ],
+  },
+
+  'vrd-travaux-publics': {
+    title: 'VRD & Travaux Publics',
+    subtitle: 'Devis pour voirie et réseaux divers',
+    icon: 'Truck',
+    fields: [
+      ...COMMON_FIELDS,
+      { name: 'typeProjet', label: 'Type de projet', type: 'select', required: true, options: ['Lotissement résidentiel', 'Zone industrielle', 'Projet institutionnel', 'Résidence privée', 'Voirie urbaine', 'Autre'], col: 1 },
+      { name: 'surfaceTerrain', label: 'Surface du terrain (m²)', type: 'text', placeholder: 'Ex: 10 000', col: 1 },
+      { name: 'typeTravaux', label: 'Travaux nécessaires', type: 'select', required: true, options: ['Voirie & chaussées', 'Réseaux d\'eau potable', 'Réseaux électriques', 'Assainissement', 'Tout VRD intégré'], col: 2 },
+      { name: 'nombreLots', label: 'Nombre de lots / parcelles', type: 'text', placeholder: 'Ex: 25', col: 1 },
+      { name: 'localisation', label: 'Localisation du projet', type: 'text', placeholder: 'Ville, commune', col: 1 },
+      { name: 'delai', label: 'Délai souhaité', type: 'select', options: ['Urgent (< 3 mois)', '3 à 6 mois', '6 à 12 mois', 'Plus de 12 mois', 'Flexible'], col: 2 },
+      { name: 'budget', label: 'Budget envisagé', type: 'text', placeholder: 'FCFA', col: 1 },
+      { name: 'notes', label: 'Description du projet', type: 'textarea', placeholder: 'Topographie, raccordements existants...', full: true },
+    ],
+  },
+
+  'plans-2d-3d': {
+    title: 'Plans Architecturaux 2D & 3D',
+    subtitle: 'Devis pour vos plans et modélisations',
+    icon: 'PenTool',
+    fields: [
+      ...COMMON_FIELDS,
+      { name: 'typePlan', label: 'Type de prestation', type: 'select', required: true, options: ['Plans 2D uniquement', 'Modélisation 3D uniquement', 'Plans 2D + 3D', 'Rendus photoréalistes', 'Visite virtuelle', 'Pack complet (2D + 3D + rendus)'], col: 1 },
+      { name: 'typeBatiment', label: 'Type de bâtiment', type: 'select', options: ['Villa', 'Maison individuelle', 'Immeuble', 'Bâtiment commercial', 'Bureau', 'Hôtel', 'Autre'], col: 1 },
+      { name: 'surface', label: 'Surface du bâtiment (m²)', type: 'text', placeholder: 'Ex: 200', col: 2 },
+      { name: 'niveaux', label: 'Nombre de niveaux', type: 'select', options: ['RDC', 'R+1', 'R+2', 'R+3', 'R+4 et plus'], col: 1 },
+      { name: 'style', label: 'Style architectural', type: 'select', options: ['Moderne', 'Contemporain', 'Classique', 'Traditionnel', 'Tropical', 'Mixte', 'À définir'], col: 1 },
+      { name: 'documentsExistants', label: 'Documents existants', type: 'select', options: ['Aucun', 'Croquis', 'Plans 2D existants', 'Photos du terrain', 'Plans + photos'], col: 2 },
+      { name: 'delai', label: 'Délai souhaité', type: 'select', options: ['Urgent (< 2 semaines)', '2 à 4 semaines', '1 à 2 mois', 'Flexible'], col: 1 },
+      { name: 'budget', label: 'Budget envisagé', type: 'text', placeholder: 'FCFA', col: 1 },
+      { name: 'notes', label: 'Précisions sur votre projet', type: 'textarea', placeholder: 'Style souhaité, références, contraintes...', full: true },
+    ],
+  },
+
+  'conseil-technique': {
+    title: 'Conseil et Assistance Technique',
+    subtitle: 'Devis pour expertise et conseil',
+    icon: 'ClipboardCheck',
+    fields: [
+      ...COMMON_FIELDS,
+      { name: 'typeMission', label: 'Type de mission', type: 'select', required: true, options: ['Audit technique', 'Conseil stratégique', 'Assistance maîtrise d\'ouvrage (AMOA)', 'Optimisation des coûts', 'Assistance réglementaire', 'Mission complète'], col: 1 },
+      { name: 'stadeProjet', label: 'Stade du projet', type: 'select', options: ['Idée / Réflexion', 'Conception', 'Pré-chantier', 'En cours d\'exécution', 'Réception / Litige'], col: 1 },
+      { name: 'typeBatiment', label: 'Type de bâtiment concerné', type: 'select', options: ['Villa', 'Immeuble', 'Bâtiment commercial', 'Ouvrage industriel', 'Bureau', 'Autre'], col: 2 },
+      { name: 'surface', label: 'Surface du projet (m²)', type: 'text', placeholder: 'Ex: 500', col: 1 },
+      { name: 'dureeMission', label: 'Durée envisagée de la mission', type: 'select', options: ['Ponctuelle (1 visite)', 'Quelques jours', '1 à 3 mois', '3 à 6 mois', '6 mois et +'], col: 1 },
+      { name: 'localisation', label: 'Localisation', type: 'text', placeholder: 'Ville, quartier', col: 2 },
+      { name: 'budget', label: 'Budget envisagé', type: 'text', placeholder: 'FCFA', col: 1 },
+      { name: 'notes', label: 'Problématique principale', type: 'textarea', required: true, placeholder: 'Décrivez la situation, les enjeux et vos attentes...', full: true },
+    ],
+  },
+};

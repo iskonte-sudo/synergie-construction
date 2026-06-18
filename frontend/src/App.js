@@ -5,6 +5,8 @@ import { Toaster } from 'sonner';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
+import QuoteModal from './components/QuoteModal';
+import { QuoteModalProvider } from './contexts/QuoteModalContext';
 import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
@@ -32,11 +34,13 @@ function Layout() {
           <Route path="/services/:serviceId" element={<ServiceDetail />} />
           <Route path="/realisations" element={<Projects />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/simulateur" element={<Simulator />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
       <Footer />
       <WhatsAppButton />
+      <QuoteModal />
       <Toaster position="top-right" richColors closeButton />
     </>
   );
@@ -45,7 +49,9 @@ function Layout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Layout />
+      <QuoteModalProvider>
+        <Layout />
+      </QuoteModalProvider>
     </BrowserRouter>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, ChevronDown, ArrowUpRight } from 'lucide-react';
 import { navigation, company } from '../data/mock';
+import { useQuoteModal } from '../contexts/QuoteModalContext';
 import logo from '../assets/logo.png';
 
 export default function Header() {
@@ -9,6 +10,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [submenuOpen, setSubmenuOpen] = useState(null);
   const location = useLocation();
+  const { openModal } = useQuoteModal();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -86,9 +88,9 @@ export default function Header() {
               <div className="text-sm font-bold text-[#0A2540]">{company.phoneDisplay}</div>
             </div>
           </a>
-          <Link to="/contact" className="inline-flex btn-primary text-sm whitespace-nowrap">
+          <button onClick={() => openModal()} className="inline-flex btn-primary text-sm whitespace-nowrap">
             <ArrowUpRight size={16} /> Demandez un devis
-          </Link>
+          </button>
         </div>
 
         {/* Mobile toggle */}
@@ -146,9 +148,9 @@ export default function Header() {
               )}
             </div>
           ))}
-          <Link to="/contact" className="btn-primary w-full justify-center mt-4 text-sm">
+          <button onClick={() => openModal()} className="btn-primary w-full justify-center mt-4 text-sm">
             <ArrowUpRight size={16} /> Demandez un devis
-          </Link>
+          </button>
           <a href={`tel:${company.phone}`} className="flex items-center justify-center gap-2 mt-3 py-3 text-sm font-semibold text-[#0A2540]">
             <Phone size={16} /> {company.phoneDisplay}
           </a>

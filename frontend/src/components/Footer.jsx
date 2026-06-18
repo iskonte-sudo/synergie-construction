@@ -2,9 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin, Twitter, ArrowRight, Send } from 'lucide-react';
 import { company, services } from '../data/mock';
+import { useQuoteModal } from '../contexts/QuoteModalContext';
 import logo from '../assets/logo.png';
 
 export default function Footer() {
+  const { openModal } = useQuoteModal();
   return (
     <footer className="bg-[#061629] text-gray-300">
       {/* CTA strip */}
@@ -16,12 +18,12 @@ export default function Footer() {
               Discutons de votre prochain projet de construction.
             </h3>
           </div>
-          <Link
-            to="/contact"
+          <button
+            onClick={() => openModal()}
             className="inline-flex items-center gap-2 bg-[#0A2540] text-white px-7 py-4 font-semibold uppercase tracking-wider text-sm hover:bg-[#143560] transition-colors"
           >
             Demander un devis <ArrowRight size={18} />
-          </Link>
+          </button>
         </div>
       </div>
 
