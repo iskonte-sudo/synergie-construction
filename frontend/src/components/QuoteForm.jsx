@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import api from '../lib/api';
 
 export default function QuoteForm({ compact = false, title = 'Demandez votre devis gratuit', subtitle }) {
   const [loading, setLoading] = useState(false);
@@ -12,14 +13,31 @@ export default function QuoteForm({ compact = false, title = 'Demandez votre dev
   const submit = (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSent(true);
-      toast.success('Demande envoyée ! Un expert vous contactera sous 24h.');
-      try { localStorage.setItem('scg_last_quote', JSON.stringify({ ...form, at: new Date().toISOString() })); } catch(_e){}
-      setTimeout(() => setSent(false), 4000);
-      setForm({ name: '', phone: '', email: '', projectType: 'Maison', address: '', budget: '', description: '' });
-    }, 1200);
+    api.post('/public/quotes', {
+      service: 'general',
+      service_title: 'Devis général',
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      values: {
+        projectType: form.projectType,
+        address: form.address,
+        budget: form.budget,
+        description: form.description,
+      },
+      source: 'contact_page',
+    })
+      .then(() => {
+        setLoading(false);
+        setSent(true);
+        toast.success('Demande envoyée ! Un expert vous contactera sous 24h.');
+        setTimeout(() => setSent(false), 4000);
+        setForm({ name: '', phone: '', email: '', projectType: 'Maison', address: '', budget: '', description: '' });
+      })
+      .catch(() => {
+        setLoading(false);
+        toast.error('Erreur d\'envoi. Réessayez.');
+      });
   };
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });

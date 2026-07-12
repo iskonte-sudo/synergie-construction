@@ -8,6 +8,7 @@ import {
 import { Dialog, DialogContent, DialogOverlay, DialogPortal } from './ui/dialog';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
 import { serviceForms, services, company } from '../data/mock';
+import api from '../lib/api';
 
 const ICONS = { FileText, Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck };
 
@@ -36,22 +37,24 @@ export default function QuoteModal() {
   const submit = (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSent(true);
-      // Persist
-      try {
-        const arr = JSON.parse(localStorage.getItem('scg_quotes') || '[]');
-        arr.push({
-          service: serviceId || 'general',
-          serviceTitle: service?.title || 'Devis général',
-          values,
-          at: new Date().toISOString(),
-        });
-        localStorage.setItem('scg_quotes', JSON.stringify(arr));
-      } catch (_) {}
-      toast.success('Demande envoyée ! Un expert vous contactera sous 24h.');
-    }, 1100);
+    const payload = {
+      service: serviceId || 'general',
+      service_title: service?.title || config.title,
+      name: values.name || '',
+      email: values.email || '',
+      phone: values.phone || '',
+      values: Object.fromEntries(Object.entries(values).filter(([k]) => !['name', 'email', 'phone'].includes(k))),
+    };
+    api.post('/public/quotes', payload)
+      .then(() => {
+        setLoading(false);
+        setSent(true);
+        toast.success('Demande envoyée ! Un expert vous contactera sous 24h.');
+      })
+      .catch(() => {
+        setLoading(false);
+        toast.error('Erreur d\'envoi. Réessayez ou contactez-nous par WhatsApp.');
+      });
   };
 
   const sendWhatsApp = () => {

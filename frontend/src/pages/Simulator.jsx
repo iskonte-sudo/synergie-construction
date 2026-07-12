@@ -13,6 +13,7 @@ import {
   projectTypes, surfaceOptions, prestationOptions, budgetOptions, delaiOptions,
   services, company,
 } from '../data/mock';
+import api from '../lib/api';
 
 const ICONS = {
   Home, Building2, Briefcase, Store, Hotel, Warehouse, Wrench,
@@ -106,18 +107,34 @@ export default function Simulator({ embedded = false }) {
 
   const handleSubmit = () => {
     setSubmitting(true);
-    setTimeout(() => {
-      const res = compute();
-      setResult(res);
-      try {
-        const arr = JSON.parse(localStorage.getItem('scg_simulations') || '[]');
-        arr.push(res);
-        localStorage.setItem('scg_simulations', JSON.stringify(arr));
-      } catch (_) {}
-      toast.success('Simulation enregistrée ! Un expert vous contactera sous 24h.');
-      setSubmitting(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 900);
+    const res = compute();
+    // Send to backend
+    api.post('/public/simulations', {
+      project_type: res.projectType.label,
+      surface: res.surface.label,
+      prestations: res.prestations.map((p) => p.label),
+      budget: res.budget.label,
+      delai: res.delai.label,
+      contact: res.contact,
+      estimate_low: res.estimateLow,
+      estimate_high: res.estimateHigh,
+      months_low: res.monthsLow,
+      months_high: res.monthsHigh,
+      recommended_services: res.recommendedServices.map((s) => s.id),
+    })
+      .then(({ data }) => {
+        res.reference = data.reference || res.reference;
+        setResult(res);
+        toast.success('Simulation enregistrée ! Un expert vous contactera sous 24h.');
+      })
+      .catch(() => {
+        setResult(res);
+        toast.warning('Simulation calculée. La sauvegarde en ligne a échoué mais vos résultats sont ci-dessous.');
+      })
+      .finally(() => {
+        setSubmitting(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
   };
 
   const reset = () => {
