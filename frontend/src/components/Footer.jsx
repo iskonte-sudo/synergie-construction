@@ -3,28 +3,30 @@ import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin, Twitter, Youtube, MessageCircle, Music2, ArrowRight, Send } from 'lucide-react';
 import { company, services, socials } from '../data/mock';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
+import { useContent } from '../hooks/useContent';
 import logo from '../assets/logo.png';
 
 const SOCIAL_ICONS = { Facebook, Instagram, Linkedin, Twitter, Youtube, MessageCircle, Music2 };
 
 export default function Footer() {
   const { openModal } = useQuoteModal();
+  const { t } = useContent();
   return (
     <footer className="bg-[#061629] text-gray-300">
       {/* CTA strip */}
       <div className="bg-[#FFB800]">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] font-semibold text-[#0A2540]/70">Prêt à démarrer ?</div>
+            <div className="text-xs uppercase tracking-[0.2em] font-semibold text-[#0A2540]/70">{t('footer.cta_pre', 'Prêt à démarrer ?')}</div>
             <h3 className="font-heading text-2xl md:text-3xl text-[#0A2540] font-bold mt-1">
-              Discutons de votre prochain projet de construction.
+              {t('footer.cta_title', 'Discutons de votre prochain projet de construction.')}
             </h3>
           </div>
           <button
             onClick={() => openModal()}
             className="inline-flex items-center gap-2 bg-[#0A2540] text-white px-7 py-4 font-semibold uppercase tracking-wider text-sm hover:bg-[#143560] transition-colors"
           >
-            Demander un devis <ArrowRight size={18} />
+            {t('footer.cta_button', 'Demander un devis')} <ArrowRight size={18} />
           </button>
         </div>
       </div>
@@ -36,7 +38,7 @@ export default function Footer() {
             <img src={logo} alt="Synergies Construction Group" className="h-16 w-auto object-contain" />
           </div>
           <p className="text-sm leading-relaxed text-gray-400 mb-6">
-            Entreprise spécialisée dans les études, la conception et la réalisation de projets de construction. Nous accompagnons particuliers, entreprises et institutions à chaque étape.
+            {t('footer.about', "Entreprise spécialisée dans les études, la conception et la réalisation de projets de construction. Nous accompagnons particuliers, entreprises et institutions à chaque étape.")}
           </p>
           <div className="flex flex-wrap gap-2">
             {socials.map((s) => {
@@ -60,7 +62,7 @@ export default function Footer() {
 
         {/* Services */}
         <div className="lg:col-span-3">
-          <h4 className="font-heading text-white text-lg font-bold mb-5 uppercase tracking-wider">Nos Services</h4>
+          <h4 className="font-heading text-white text-lg font-bold mb-5 uppercase tracking-wider">{t('footer.services_title', 'Nos Services')}</h4>
           <ul className="space-y-3">
             {services.slice(0, 6).map((s) => (
               <li key={s.id}>
@@ -77,7 +79,7 @@ export default function Footer() {
 
         {/* Contact */}
         <div className="lg:col-span-3">
-          <h4 className="font-heading text-white text-lg font-bold mb-5 uppercase tracking-wider">Contact</h4>
+          <h4 className="font-heading text-white text-lg font-bold mb-5 uppercase tracking-wider">{t('footer.contact_title', 'Contact')}</h4>
           <ul className="space-y-4">
             <li className="flex gap-3 text-sm">
               <MapPin size={18} className="text-[#FFB800] shrink-0 mt-0.5" />
@@ -96,13 +98,13 @@ export default function Footer() {
 
         {/* Newsletter */}
         <div className="lg:col-span-2">
-          <h4 className="font-heading text-white text-lg font-bold mb-5 uppercase tracking-wider">Newsletter</h4>
-          <p className="text-sm text-gray-400 mb-4">Recevez nos dernières actualités.</p>
+          <h4 className="font-heading text-white text-lg font-bold mb-5 uppercase tracking-wider">{t('footer.newsletter_title', 'Newsletter')}</h4>
+          <p className="text-sm text-gray-400 mb-4">{t('footer.newsletter_text', 'Recevez nos dernières actualités.')}</p>
           <form onSubmit={(e) => e.preventDefault()} className="flex">
             <input
               type="email"
               required
-              placeholder="Votre email"
+              placeholder={t('footer.newsletter_placeholder', 'Votre email')}
               className="flex-1 min-w-0 bg-white/5 border border-gray-700 text-white text-sm px-3 py-3 placeholder:text-gray-500 focus:outline-none focus:border-[#FFB800]"
             />
             <button

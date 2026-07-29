@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { faqs as fallback, company } from '../data/mock';
+import { useContent } from '../hooks/useContent';
 import api from '../lib/api';
 
 export default function FAQSection() {
   const [items, setItems] = useState(fallback);
   const [open, setOpen] = useState(0);
+  const { t } = useContent();
 
   useEffect(() => {
     api.get('/public/faqs').then(({ data }) => {
@@ -17,16 +19,16 @@ export default function FAQSection() {
     <section className="py-20 lg:py-28 bg-[#F5F7FA]">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div className="lg:col-span-5">
-          <div className="section-label mb-4">Questions Fréquentes</div>
+          <div className="section-label mb-4">{t('home.faq.badge', 'Questions Fréquentes')}</div>
           <h2 className="font-heading text-4xl lg:text-5xl text-[#0A2540] font-extrabold uppercase leading-[0.95]">
-            Vos questions, nos réponses
+            {t('home.faq.title', 'Vos questions, nos réponses')}
           </h2>
           <p className="mt-5 text-gray-600 leading-relaxed">
-            Tout ce que vous devez savoir avant de démarrer votre projet de construction. Notre équipe reste disponible pour toute autre question.
+            {t('home.faq.description', "Tout ce que vous devez savoir avant de démarrer votre projet de construction. Notre équipe reste disponible pour toute autre question.")}
           </p>
           <div className="mt-8 p-6 bg-[#0A2540] text-white">
-            <div className="text-sm uppercase tracking-wider text-[#FFB800] font-semibold mb-2">Besoin d'aide ?</div>
-            <div className="font-heading text-2xl font-bold mb-3">Parlez à un expert</div>
+            <div className="text-sm uppercase tracking-wider text-[#FFB800] font-semibold mb-2">{t('home.faq.help_subtitle', "Besoin d'aide ?")}</div>
+            <div className="font-heading text-2xl font-bold mb-3">{t('home.faq.help_title', 'Parlez à un expert')}</div>
             <a href={`tel:${company.phone}`} className="inline-block text-[#FFB800] font-bold text-xl hover:underline">{company.phoneDisplay}</a>
           </div>
         </div>

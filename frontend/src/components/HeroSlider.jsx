@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { heroSlides as fallbackSlides, company } from '../data/mock';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
+import { useContent } from '../hooks/useContent';
 import api, { mediaUrl } from '../lib/api';
 
 export default function HeroSlider() {
   const [slides, setSlides] = useState(fallbackSlides);
   const [active, setActive] = useState(0);
   const { openModal } = useQuoteModal();
+  const { t } = useContent();
 
   useEffect(() => {
     api.get('/public/slides').then(({ data }) => {
@@ -51,7 +53,7 @@ export default function HeroSlider() {
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-12 items-center gap-8 mt-16">
           <div className="lg:col-span-8">
             <div key={active} className="animate-fade-up">
-              <div className="section-label !text-[#FFB800] mb-5">Synergies Construction Group</div>
+              <div className="section-label !text-[#FFB800] mb-5">{t('home.hero.badge', 'Synergies Construction Group')}</div>
               <h1 className="font-heading text-white text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[0.95] tracking-tight max-w-4xl text-balance uppercase">
                 {slides[active]?.title}
               </h1>
@@ -59,14 +61,14 @@ export default function HeroSlider() {
               <div className="flex flex-wrap gap-4 mt-8">
                 {slides[active]?.button_link ? (
                   <Link to={slides[active].button_link} className="btn-primary">
-                    <ArrowUpRight size={18} /> {slides[active].button_label || 'En savoir plus'}
+                    <ArrowUpRight size={18} /> {slides[active].button_label || t('home.hero.cta_primary', 'Demander un devis')}
                   </Link>
                 ) : (
                   <button onClick={() => openModal()} className="btn-primary">
-                    <ArrowUpRight size={18} /> Demander un devis
+                    <ArrowUpRight size={18} /> {t('home.hero.cta_primary', 'Demander un devis')}
                   </button>
                 )}
-                <Link to="/services" className="btn-outline-light">Nos services</Link>
+                <Link to="/services" className="btn-outline-light">{t('home.hero.cta_secondary', 'Nos services')}</Link>
               </div>
             </div>
           </div>
@@ -74,8 +76,8 @@ export default function HeroSlider() {
           {/* Experience badge */}
           <div className="lg:col-span-4 hidden lg:flex justify-end">
             <div className="bg-[#0A2540]/85 backdrop-blur-sm border border-[#FFB800]/30 px-10 py-12 text-right">
-              <div className="font-heading text-white text-7xl xl:text-8xl font-extrabold leading-none">{company.experience}+</div>
-              <div className="text-[#FFB800] uppercase tracking-[0.2em] text-sm font-semibold mt-3">Ans d'expérience</div>
+              <div className="font-heading text-white text-7xl xl:text-8xl font-extrabold leading-none">{t('home.hero.experience_number', `${company.experience}+`)}</div>
+              <div className="text-[#FFB800] uppercase tracking-[0.2em] text-sm font-semibold mt-3">{t('home.hero.experience_label', "Ans d'expérience")}</div>
             </div>
           </div>
         </div>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { testimonials as fallback } from '../data/mock';
+import { useContent } from '../hooks/useContent';
 import api, { mediaUrl } from '../lib/api';
 
 export default function TestimonialsSection() {
   const [items, setItems] = useState(fallback);
   const [active, setActive] = useState(0);
+  const { t: tr } = useContent();
 
   useEffect(() => {
     api.get('/public/testimonials').then(({ data }) => {
@@ -23,8 +25,8 @@ export default function TestimonialsSection() {
       <div className="absolute inset-0 dot-pattern opacity-20" />
       <div className="relative max-w-[1400px] mx-auto px-4 lg:px-8">
         <div className="text-center mb-14">
-          <div className="section-label mb-3 justify-center">Témoignages Clients</div>
-          <h2 className="font-heading text-4xl lg:text-6xl font-extrabold uppercase">Ils nous font confiance</h2>
+          <div className="section-label mb-3 justify-center">{tr('home.testimonials.badge', 'Témoignages Clients')}</div>
+          <h2 className="font-heading text-4xl lg:text-6xl font-extrabold uppercase">{tr('home.testimonials.title', 'Ils nous font confiance')}</h2>
         </div>
 
         <div className="max-w-4xl mx-auto text-center">
