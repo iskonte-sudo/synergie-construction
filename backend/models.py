@@ -235,3 +235,166 @@ class SiteSettingsUpdate(BaseModel):
     socials: Optional[List[Dict[str, str]]] = None
     seo_title: Optional[str] = None
     seo_description: Optional[str] = None
+
+
+# ---------------- SIMULATOR CONFIG ----------------
+class SimulatorConfig(BaseModel):
+    id: str = 'main'
+    project_types: List[Dict[str, Any]] = []
+    surface_options: List[Dict[str, Any]] = []
+    prestation_options: List[Dict[str, Any]] = []
+    budget_options: List[Dict[str, Any]] = []
+    delai_options: List[Dict[str, Any]] = []
+    prestation_multiplier: float = 0.04
+    estimate_low_factor: float = 0.9
+    estimate_high_factor: float = 1.15
+    updated_at: datetime = Field(default_factory=_now)
+
+
+class SimulatorConfigUpdate(BaseModel):
+    project_types: Optional[List[Dict[str, Any]]] = None
+    surface_options: Optional[List[Dict[str, Any]]] = None
+    prestation_options: Optional[List[Dict[str, Any]]] = None
+    budget_options: Optional[List[Dict[str, Any]]] = None
+    delai_options: Optional[List[Dict[str, Any]]] = None
+    prestation_multiplier: Optional[float] = None
+    estimate_low_factor: Optional[float] = None
+    estimate_high_factor: Optional[float] = None
+
+
+# ---------------- SLIDE ----------------
+class SlideCreate(BaseModel):
+    title: str
+    subtitle: Optional[str] = ''
+    text: Optional[str] = ''
+    image: str
+    button_label: Optional[str] = ''
+    button_link: Optional[str] = ''
+    order: int = 0
+    active: bool = True
+
+
+class Slide(SlideCreate):
+    id: str = Field(default_factory=_uid)
+    created_at: datetime = Field(default_factory=_now)
+    updated_at: datetime = Field(default_factory=_now)
+
+
+# ---------------- TESTIMONIAL ----------------
+class TestimonialCreate(BaseModel):
+    name: str
+    role: Optional[str] = ''
+    content: str
+    rating: int = 5
+    image: Optional[str] = ''
+    order: int = 0
+    active: bool = True
+
+
+class Testimonial(TestimonialCreate):
+    id: str = Field(default_factory=_uid)
+    created_at: datetime = Field(default_factory=_now)
+
+
+# ---------------- FAQ ----------------
+class FAQCreate(BaseModel):
+    question: str
+    answer: str
+    category: Optional[str] = 'general'
+    order: int = 0
+    active: bool = True
+
+
+class FAQ(FAQCreate):
+    id: str = Field(default_factory=_uid)
+    created_at: datetime = Field(default_factory=_now)
+
+
+# ---------------- TEAM ----------------
+class TeamMemberCreate(BaseModel):
+    name: str
+    role: str
+    photo: Optional[str] = ''
+    bio: Optional[str] = ''
+    email: Optional[str] = ''
+    phone: Optional[str] = ''
+    socials: List[Dict[str, str]] = []
+    order: int = 0
+    active: bool = True
+
+
+class TeamMember(TeamMemberCreate):
+    id: str = Field(default_factory=_uid)
+    created_at: datetime = Field(default_factory=_now)
+
+
+# ---------------- PARTNER ----------------
+class PartnerCreate(BaseModel):
+    name: str
+    logo: str
+    url: Optional[str] = ''
+    order: int = 0
+    active: bool = True
+
+
+class Partner(PartnerCreate):
+    id: str = Field(default_factory=_uid)
+    created_at: datetime = Field(default_factory=_now)
+
+
+# ---------------- BLOG ----------------
+class BlogPostCreate(BaseModel):
+    title: str
+    slug: str
+    excerpt: Optional[str] = ''
+    content: str  # Markdown
+    cover_image: Optional[str] = ''
+    category: Optional[str] = 'Actualités'
+    tags: List[str] = []
+    author: Optional[str] = ''
+    seo_title: Optional[str] = ''
+    seo_description: Optional[str] = ''
+    og_image: Optional[str] = ''
+    published: bool = False
+    published_at: Optional[datetime] = None
+
+
+class BlogPost(BlogPostCreate):
+    id: str = Field(default_factory=_uid)
+    created_at: datetime = Field(default_factory=_now)
+    updated_at: datetime = Field(default_factory=_now)
+    views: int = 0
+
+
+# ---------------- MENU ITEM ----------------
+class MenuItemCreate(BaseModel):
+    label: str
+    path: str
+    parent_id: Optional[str] = None
+    location: str = 'header'  # header | footer | mobile
+    order: int = 0
+    active: bool = True
+    external: bool = False
+
+
+class MenuItem(MenuItemCreate):
+    id: str = Field(default_factory=_uid)
+    created_at: datetime = Field(default_factory=_now)
+
+
+# ---------------- CONTENT BLOCK ----------------
+# Editable text/config per page section (key/value store)
+class ContentBlockUpdate(BaseModel):
+    key: str  # e.g. 'home.hero.badge', 'about.mission.title'
+    value: Any
+    page: Optional[str] = 'general'
+    label: Optional[str] = ''
+
+
+class ContentBlock(BaseModel):
+    id: str = Field(default_factory=_uid)
+    key: str
+    value: Any
+    page: str = 'general'
+    label: str = ''
+    updated_at: datetime = Field(default_factory=_now)

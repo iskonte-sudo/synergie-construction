@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, ChevronDown, ArrowUpRight, Facebook, Instagram, Linkedin, Youtube, MessageCircle, Music2 } from 'lucide-react';
-import { navigation, company, socials } from '../data/mock';
+import { navigation as fallbackNav, company, socials } from '../data/mock';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
+import api from '../lib/api';
 import logo from '../assets/logo.png';
 
 const SOCIAL_ICONS = { Facebook, Instagram, Linkedin, Youtube, MessageCircle, Music2 };
@@ -11,8 +12,26 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [submenuOpen, setSubmenuOpen] = useState(null);
+  const [navigation, setNavigation] = useState(fallbackNav);
   const location = useLocation();
   const { openModal } = useQuoteModal();
+
+  useEffect(() => {
+    api.get('/public/menu-items').then(({ data }) => {
+      const headerItems = (data || [])
+        .filter((m) => m.location === 'header' && m.active !== false)
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((m) => ({ label: m.label, path: m.path, external: m.external }));
+      if (headerItems.length) {
+        // Preserve services submenu from fallback if present
+        const enriched = headerItems.map((item) => {
+          const match = fallbackNav.find((f) => f.path === item.path && f.submenu);
+          return match ? { ...item, submenu: match.submenu } : item;
+        });
+        setNavigation(enriched);
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);

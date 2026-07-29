@@ -26,6 +26,15 @@ from models import (
     VisitCreate, Visit,
     Media, AuditLog,
     SiteSettings, SiteSettingsUpdate,
+    SimulatorConfig, SimulatorConfigUpdate,
+    SlideCreate, Slide,
+    TestimonialCreate, Testimonial,
+    FAQCreate, FAQ,
+    TeamMemberCreate, TeamMember,
+    PartnerCreate, Partner,
+    BlogPostCreate, BlogPost,
+    MenuItemCreate, MenuItem,
+    ContentBlockUpdate, ContentBlock,
 )
 
 ROOT_DIR = Path(__file__).parent
@@ -602,6 +611,188 @@ async def list_audit_logs(user: UserInDB = Depends(require_admin), limit: int = 
     return [_clean(i) for i in items]
 
 
+# ----------------------- SIMULATOR CONFIG -----------------------
+@api_router.get('/public/simulator-config')
+async def public_simulator_config():
+    s = await db.simulator_config.find_one({'id': 'main'})
+    return _clean(s) if s else SimulatorConfig().model_dump()
+
+
+@api_router.get('/admin/simulator-config')
+async def get_simulator_config(user: UserInDB = Depends(get_current_user)):
+    s = await db.simulator_config.find_one({'id': 'main'})
+    if not s:
+        s = SimulatorConfig().model_dump()
+        await db.simulator_config.insert_one(s)
+    return _clean(s)
+
+
+@api_router.put('/admin/simulator-config')
+async def update_simulator_config(payload: SimulatorConfigUpdate, user: UserInDB = Depends(require_admin)):
+    upd = {k: v for k, v in payload.model_dump().items() if v is not None}
+    upd['updated_at'] = datetime.utcnow()
+    await db.simulator_config.update_one({'id': 'main'}, {'$set': upd}, upsert=True)
+    await log_action(user, 'update_simulator_config')
+    s = await db.simulator_config.find_one({'id': 'main'})
+    return _clean(s)
+
+
+# ----------------------- GENERIC CRUD HELPERS -----------------------
+def make_crud(collection: str, ModelIn, ModelOut, prefix: str, public_filter: dict = None):
+    """Registers CRUD endpoints for a collection under admin & public paths."""
+    @api_router.get(f'/public/{prefix}')
+    async def _public_list():
+        query = public_filter or {'active': True}
+        items = await db[collection].find(query).sort('order', 1).to_list(500)
+        return [_clean(i) for i in items]
+
+    _public_list.__name__ = f'public_list_{prefix}'
+
+    @api_router.get(f'/admin/{prefix}')
+    async def _admin_list(user: UserInDB = Depends(get_current_user)):
+        items = await db[collection].find().sort('order', 1).to_list(1000)
+        return [_clean(i) for i in items]
+
+    _admin_list.__name__ = f'admin_list_{prefix}'
+
+    @api_router.post(f'/admin/{prefix}')
+    async def _create(payload: ModelIn, user: UserInDB = Depends(get_current_user)):
+        obj = ModelOut(**payload.model_dump())
+        await db[collection].insert_one(obj.model_dump())
+        await log_action(user, f'create_{prefix}', obj.id)
+        return obj
+
+    _create.__name__ = f'create_{prefix}'
+
+    @api_router.patch(f'/admin/{prefix}/{{item_id}}')
+    async def _update(item_id: str, payload: ModelIn, user: UserInDB = Depends(get_current_user)):
+        upd = payload.model_dump()
+        upd['updated_at'] = datetime.utcnow()
+        res = await db[collection].update_one({'id': item_id}, {'$set': upd})
+        if res.matched_count == 0:
+            raise HTTPException(404, 'Introuvable')
+        await log_action(user, f'update_{prefix}', item_id)
+        return _clean(await db[collection].find_one({'id': item_id}))
+
+    _update.__name__ = f'update_{prefix}'
+
+    @api_router.delete(f'/admin/{prefix}/{{item_id}}')
+    async def _delete(item_id: str, user: UserInDB = Depends(require_admin)):
+        await db[collection].delete_one({'id': item_id})
+        await log_action(user, f'delete_{prefix}', item_id)
+        return {'ok': True}
+
+    _delete.__name__ = f'delete_{prefix}'
+
+
+# Register CRUDs
+make_crud('slides', SlideCreate, Slide, 'slides')
+make_crud('testimonials', TestimonialCreate, Testimonial, 'testimonials')
+make_crud('faqs', FAQCreate, FAQ, 'faqs')
+make_crud('team', TeamMemberCreate, TeamMember, 'team')
+make_crud('partners', PartnerCreate, Partner, 'partners')
+make_crud('menu_items', MenuItemCreate, MenuItem, 'menu-items')
+
+
+# ----------------------- BLOG -----------------------
+@api_router.get('/public/blog')
+async def public_blog_list():
+    items = await db.blog_posts.find({'published': True}).sort('published_at', -1).to_list(500)
+    return [_clean(i) for i in items]
+
+
+@api_router.get('/public/blog/{slug}')
+async def public_blog_detail(slug: str):
+    item = await db.blog_posts.find_one({'slug': slug, 'published': True})
+    if not item:
+        raise HTTPException(404, 'Article introuvable')
+    await db.blog_posts.update_one({'id': item['id']}, {'$inc': {'views': 1}})
+    return _clean(item)
+
+
+@api_router.get('/admin/blog')
+async def admin_blog_list(user: UserInDB = Depends(get_current_user)):
+    items = await db.blog_posts.find().sort('created_at', -1).to_list(1000)
+    return [_clean(i) for i in items]
+
+
+@api_router.post('/admin/blog')
+async def create_blog(payload: BlogPostCreate, user: UserInDB = Depends(get_current_user)):
+    if await db.blog_posts.find_one({'slug': payload.slug}):
+        raise HTTPException(400, 'Ce slug est déjà utilisé')
+    post = BlogPost(**payload.model_dump())
+    if post.published and not post.published_at:
+        post.published_at = datetime.utcnow()
+    await db.blog_posts.insert_one(post.model_dump())
+    await log_action(user, 'create_blog', post.id)
+    return post
+
+
+@api_router.patch('/admin/blog/{item_id}')
+async def update_blog(item_id: str, payload: BlogPostCreate, user: UserInDB = Depends(get_current_user)):
+    upd = payload.model_dump()
+    upd['updated_at'] = datetime.utcnow()
+    if upd.get('published') and not upd.get('published_at'):
+        upd['published_at'] = datetime.utcnow()
+    res = await db.blog_posts.update_one({'id': item_id}, {'$set': upd})
+    if res.matched_count == 0:
+        raise HTTPException(404, 'Article introuvable')
+    await log_action(user, 'update_blog', item_id)
+    return _clean(await db.blog_posts.find_one({'id': item_id}))
+
+
+@api_router.delete('/admin/blog/{item_id}')
+async def delete_blog(item_id: str, user: UserInDB = Depends(require_admin)):
+    await db.blog_posts.delete_one({'id': item_id})
+    await log_action(user, 'delete_blog', item_id)
+    return {'ok': True}
+
+
+# ----------------------- CONTENT BLOCKS (key/value editable text) -----------------------
+@api_router.get('/public/content')
+async def public_content(page: Optional[str] = None):
+    q = {}
+    if page:
+        q['page'] = page
+    items = await db.content_blocks.find(q).to_list(2000)
+    return {i['key']: i['value'] for i in items}
+
+
+@api_router.get('/admin/content')
+async def admin_content(user: UserInDB = Depends(get_current_user), page: Optional[str] = None):
+    q = {}
+    if page:
+        q['page'] = page
+    items = await db.content_blocks.find(q).to_list(2000)
+    return [_clean(i) for i in items]
+
+
+@api_router.put('/admin/content')
+async def upsert_content(payload: ContentBlockUpdate, user: UserInDB = Depends(get_current_user)):
+    existing = await db.content_blocks.find_one({'key': payload.key})
+    doc = {
+        'key': payload.key,
+        'value': payload.value,
+        'page': payload.page or 'general',
+        'label': payload.label or '',
+        'updated_at': datetime.utcnow(),
+    }
+    if existing:
+        await db.content_blocks.update_one({'key': payload.key}, {'$set': doc})
+    else:
+        doc['id'] = str(uuid.uuid4())
+        await db.content_blocks.insert_one(doc)
+    await log_action(user, 'update_content', payload.key)
+    return {'ok': True, 'key': payload.key}
+
+
+@api_router.delete('/admin/content/{key}')
+async def delete_content(key: str, user: UserInDB = Depends(require_admin)):
+    await db.content_blocks.delete_one({'key': key})
+    await log_action(user, 'delete_content', key)
+    return {'ok': True}
+
+
 # ----------------------- APP SETUP -----------------------
 app.include_router(api_router)
 
@@ -641,6 +832,102 @@ async def startup_event():
         ])
         await db.settings.insert_one(s.model_dump())
         logger.info('Site settings seeded')
+
+
+    # Seed simulator config
+    existing_sim = await db.simulator_config.find_one({'id': 'main'})
+    if not existing_sim:
+        sim_cfg = SimulatorConfig(
+            project_types=[
+                {'id': 'villa', 'label': 'Villa', 'icon': 'Home', 'baseCostPerSqm': 280000, 'monthsPerSqm': 0.012},
+                {'id': 'immeuble', 'label': 'Immeuble', 'icon': 'Building2', 'baseCostPerSqm': 350000, 'monthsPerSqm': 0.015},
+                {'id': 'bureau', 'label': 'Bureau', 'icon': 'Briefcase', 'baseCostPerSqm': 320000, 'monthsPerSqm': 0.013},
+                {'id': 'commerce', 'label': 'Commerce', 'icon': 'Store', 'baseCostPerSqm': 300000, 'monthsPerSqm': 0.011},
+                {'id': 'hotel', 'label': 'Hôtel', 'icon': 'Hotel', 'baseCostPerSqm': 420000, 'monthsPerSqm': 0.018},
+                {'id': 'entrepot', 'label': 'Entrepôt', 'icon': 'Warehouse', 'baseCostPerSqm': 180000, 'monthsPerSqm': 0.008},
+                {'id': 'renovation', 'label': 'Rénovation', 'icon': 'Wrench', 'baseCostPerSqm': 150000, 'monthsPerSqm': 0.009},
+            ],
+            surface_options=[
+                {'id': 's1', 'label': 'Moins de 100 m²', 'value': 80},
+                {'id': 's2', 'label': '100 à 250 m²', 'value': 175},
+                {'id': 's3', 'label': '250 à 500 m²', 'value': 375},
+                {'id': 's4', 'label': '500 à 1000 m²', 'value': 750},
+                {'id': 's5', 'label': 'Plus de 1000 m²', 'value': 1500},
+            ],
+            prestation_options=[
+                {'id': 'faisabilite', 'label': 'Étude de faisabilité', 'icon': 'Search', 'recommends': 'conseil-technique'},
+                {'id': 'plans-archi', 'label': 'Plans architecturaux', 'icon': 'PenTool', 'recommends': 'plans-2d-3d'},
+                {'id': 'modelisation-3d', 'label': 'Modélisation 3D', 'icon': 'Box', 'recommends': 'plans-2d-3d'},
+                {'id': 'rendus', 'label': 'Rendus photoréalistes', 'icon': 'Image', 'recommends': 'plans-2d-3d'},
+                {'id': 'controle-qualite', 'label': 'Contrôle qualité', 'icon': 'ShieldCheck', 'recommends': 'suivi-controle'},
+                {'id': 'suivi-chantier', 'label': 'Suivi de chantier', 'icon': 'HardHat', 'recommends': 'suivi-controle'},
+                {'id': 'coordination', 'label': 'Coordination des intervenants', 'icon': 'Users', 'recommends': 'suivi-controle'},
+                {'id': 'amoa', 'label': "Assistance maîtrise d'ouvrage", 'icon': 'ClipboardCheck', 'recommends': 'conseil-technique'},
+            ],
+            budget_options=[
+                {'id': 'b1', 'label': 'Moins de 25 millions FCFA', 'min': 0, 'max': 25},
+                {'id': 'b2', 'label': '25 à 50 millions FCFA', 'min': 25, 'max': 50},
+                {'id': 'b3', 'label': '50 à 100 millions FCFA', 'min': 50, 'max': 100},
+                {'id': 'b4', 'label': 'Plus de 100 millions FCFA', 'min': 100, 'max': 999},
+            ],
+            delai_options=[
+                {'id': 'd1', 'label': 'Urgent (moins de 3 mois)', 'months': 2},
+                {'id': 'd2', 'label': '3 à 6 mois', 'months': 5},
+                {'id': 'd3', 'label': '6 à 12 mois', 'months': 9},
+                {'id': 'd4', 'label': '12 à 24 mois', 'months': 18},
+                {'id': 'd5', 'label': 'Plus de 24 mois', 'months': 28},
+                {'id': 'd6', 'label': 'Flexible', 'months': 12},
+            ],
+        )
+        await db.simulator_config.insert_one(sim_cfg.model_dump())
+        logger.info('Simulator config seeded')
+
+    # Seed slides
+    if await db.slides.count_documents({}) == 0:
+        for i, s in enumerate([
+            {'title': "Transformer vos projets en réalité", 'subtitle': "Excellence et innovation dans chaque construction", 'image': 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1920&q=80', 'button_label': 'Nos services', 'button_link': '/services'},
+            {'title': "Construire l'avenir avec précision", 'subtitle': "Des fondations solides pour des projets durables", 'image': 'https://images.unsplash.com/photo-1508450859948-4e04fabaa4ea?auto=format&fit=crop&w=1920&q=80', 'button_label': 'Nos réalisations', 'button_link': '/realisations'},
+            {'title': "L'expertise au service de vos projets", 'subtitle': "30 ans d'expérience dans la construction", 'image': 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1920&q=80', 'button_label': 'Contactez-nous', 'button_link': '/contact'},
+        ]):
+            await db.slides.insert_one(Slide(**s, order=i).model_dump())
+        logger.info('Slides seeded')
+
+    # Seed testimonials
+    if await db.testimonials.count_documents({}) == 0:
+        for i, t in enumerate([
+            {'name': 'Mamadou Diop', 'role': 'Propriétaire', 'content': "Synergie Construction a transformé notre projet en réalité. Leur professionnalisme et leur rigueur sont remarquables. Je recommande vivement.", 'rating': 5, 'image': 'https://i.pravatar.cc/150?img=12'},
+            {'name': 'Aïssatou Ndiaye', 'role': 'Directrice, Ndiaye & Co', 'content': "Notre nouvel immeuble de bureaux est exactement ce que nous voulions. Travail livré dans les délais et budget respecté.", 'rating': 5, 'image': 'https://i.pravatar.cc/150?img=44'},
+            {'name': 'Cheikh Fall', 'role': 'Promoteur Immobilier', 'content': "Une équipe d'experts, à l'écoute et toujours disponibles. Plusieurs projets réalisés ensemble, toujours avec excellence.", 'rating': 5, 'image': 'https://i.pravatar.cc/150?img=33'},
+            {'name': 'Fatou Sarr', 'role': 'Architecte', 'content': "Collaboration exceptionnelle. Les plans 3D ont permis à mes clients de visualiser parfaitement leur projet.", 'rating': 5, 'image': 'https://i.pravatar.cc/150?img=47'},
+        ]):
+            await db.testimonials.insert_one(Testimonial(**t, order=i).model_dump())
+        logger.info('Testimonials seeded')
+
+    # Seed FAQs
+    if await db.faqs.count_documents({}) == 0:
+        for i, f in enumerate([
+            {'question': 'Quels types de projets prenez-vous en charge ?', 'answer': "Nous prenons en charge tous types de projets : résidentiels (villas, immeubles), commerciaux, industriels et institutionnels. De la conception à la livraison clé en main."},
+            {'question': 'Comment se déroule la demande de devis ?', 'answer': "Remplissez notre formulaire en ligne ou contactez-nous par WhatsApp. Un expert vous rappelle sous 24h pour étudier votre projet et établir un devis détaillé gratuit."},
+            {'question': "Quels sont vos délais d'intervention ?", 'answer': "Les délais varient selon la nature et l'ampleur du projet. Une étude préliminaire est réalisée sous 48h, puis un planning détaillé est établi avec le client."},
+            {'question': 'Proposez-vous des financements ?', 'answer': "Oui, nous travaillons avec des partenaires financiers pour faciliter le financement de vos projets. Échelonnement possible selon les étapes du chantier."},
+            {'question': 'Quelles garanties offrez-vous ?', 'answer': "Tous nos travaux sont couverts par une garantie décennale. Nous garantissons également la qualité des matériaux et la conformité aux normes en vigueur."},
+            {'question': 'Intervenez-vous en dehors de Dakar ?', 'answer': "Oui, nous intervenons dans tout le Sénégal (Thiès, Saint-Louis, Saly, Mbour, Touba, Ziguinchor...) et dans la sous-région ouest-africaine selon les projets."},
+        ]):
+            await db.faqs.insert_one(FAQ(**f, order=i).model_dump())
+        logger.info('FAQs seeded')
+
+    # Seed menu items (header)
+    if await db.menu_items.count_documents({}) == 0:
+        for i, m in enumerate([
+            {'label': 'Accueil', 'path': '/', 'location': 'header'},
+            {'label': 'À propos', 'path': '/a-propos', 'location': 'header'},
+            {'label': 'Services', 'path': '/services', 'location': 'header'},
+            {'label': 'Nos Réalisations', 'path': '/realisations', 'location': 'header'},
+            {'label': 'Blog', 'path': '/blog', 'location': 'header'},
+            {'label': 'Contact', 'path': '/contact', 'location': 'header'},
+        ]):
+            await db.menu_items.insert_one(MenuItem(**m, order=i).model_dump())
+        logger.info('Menu items seeded')
 
 
 @app.on_event('shutdown')

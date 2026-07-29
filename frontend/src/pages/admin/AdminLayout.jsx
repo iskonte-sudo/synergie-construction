@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, MessageSquare, Briefcase, Wrench, Calculator,
-  Users, Settings as SettingsIcon, Image as ImageIcon, ScrollText,
+  Users, Settings as SettingsIcon, Image as ImageIcon, ScrollText, Sliders,
+  Quote as QuoteIcon, HelpCircle, UserCircle2, Handshake, Newspaper, MenuSquare, FileType2,
   Menu, X, LogOut, Moon, Sun, ChevronDown, ExternalLink, User as UserIcon, ShieldCheck, Loader2,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,11 +11,24 @@ import logo from '../../assets/logo.png';
 
 const MENU = [
   { label: 'Tableau de bord', path: '/admin', icon: LayoutDashboard, end: true },
-  { label: 'Devis', path: '/admin/devis', icon: FileText, badge: 'quotes' },
-  { label: 'Messages', path: '/admin/messages', icon: MessageSquare, badge: 'messages' },
+  { section: 'Contenu' },
+  { label: 'Contenu des pages', path: '/admin/contenu', icon: FileType2 },
+  { label: 'Slider accueil', path: '/admin/slider', icon: Sliders },
+  { label: 'Menus', path: '/admin/menus', icon: MenuSquare, adminOnly: true },
+  { label: 'Blog', path: '/admin/blog', icon: Newspaper },
+  { section: 'Ressources' },
   { label: 'Projets', path: '/admin/projets', icon: Briefcase },
   { label: 'Services', path: '/admin/services', icon: Wrench },
+  { label: 'Témoignages', path: '/admin/temoignages', icon: QuoteIcon },
+  { label: 'FAQ', path: '/admin/faq', icon: HelpCircle },
+  { label: 'Équipe', path: '/admin/equipe', icon: UserCircle2 },
+  { label: 'Partenaires', path: '/admin/partenaires', icon: Handshake },
+  { section: 'Interactions' },
+  { label: 'Devis', path: '/admin/devis', icon: FileText },
+  { label: 'Messages', path: '/admin/messages', icon: MessageSquare },
   { label: 'Simulations', path: '/admin/simulations', icon: Calculator },
+  { label: 'Config simulateur', path: '/admin/simulateur-config', icon: Calculator, adminOnly: true },
+  { section: 'Système' },
   { label: 'Médiathèque', path: '/admin/media', icon: ImageIcon },
   { label: 'Utilisateurs', path: '/admin/utilisateurs', icon: Users, superOnly: true },
   { label: 'Journal d\'actions', path: '/admin/journal', icon: ScrollText, adminOnly: true },
@@ -76,23 +90,32 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4">
-          {visibleMenu.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-5 py-3 text-sm font-semibold transition-colors border-l-2 ${
-                  isActive
-                    ? 'bg-white/10 text-[#FFB800] border-[#FFB800]'
-                    : 'text-white/70 hover:text-white hover:bg-white/5 border-transparent'
-                }`
-              }
-            >
-              <item.icon size={18} />
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
+          {visibleMenu.map((item, idx) => {
+            if (item.section) {
+              return (
+                <div key={`s-${idx}`} className="px-5 pt-4 pb-2 text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                  {item.section}
+                </div>
+              );
+            }
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-5 py-2.5 text-sm font-semibold transition-colors border-l-2 ${
+                    isActive
+                      ? 'bg-white/10 text-[#FFB800] border-[#FFB800]'
+                      : 'text-white/70 hover:text-white hover:bg-white/5 border-transparent'
+                  }`
+                }
+              >
+                <item.icon size={16} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-white/10">

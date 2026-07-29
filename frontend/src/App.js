@@ -24,6 +24,10 @@ import Dashboard from './pages/admin/Dashboard';
 import AdminQuotes from './pages/admin/Quotes';
 import AdminMessages from './pages/admin/Messages';
 import AdminSimulations from './pages/admin/Simulations';
+import AdminSimulatorConfig from './pages/admin/SimulatorConfig';
+import AdminBlog from './pages/admin/Blog';
+import AdminContent from './pages/admin/Content';
+import { AdminSlides, AdminTestimonials, AdminFAQs, AdminTeam, AdminPartners, AdminMenuItems } from './pages/admin/CrudPages';
 import AdminProjects from './pages/admin/Projects';
 import AdminServices from './pages/admin/Services';
 import AdminUsers from './pages/admin/Users';
@@ -78,6 +82,15 @@ export default function App() {
               <Route path="devis" element={<AdminQuotes />} />
               <Route path="messages" element={<AdminMessages />} />
               <Route path="simulations" element={<AdminSimulations />} />
+              <Route path="simulateur-config" element={<AdminSimulatorConfig />} />
+              <Route path="slider" element={<AdminSlides />} />
+              <Route path="temoignages" element={<AdminTestimonials />} />
+              <Route path="faq" element={<AdminFAQs />} />
+              <Route path="equipe" element={<AdminTeam />} />
+              <Route path="partenaires" element={<AdminPartners />} />
+              <Route path="menus" element={<AdminMenuItems />} />
+              <Route path="blog" element={<AdminBlog />} />
+              <Route path="contenu" element={<AdminContent />} />
               <Route path="projets" element={<AdminProjects />} />
               <Route path="services" element={<AdminServices />} />
               <Route path="utilisateurs" element={<AdminUsers />} />

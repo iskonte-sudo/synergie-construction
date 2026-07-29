@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
-import { testimonials } from '../data/mock';
+import { testimonials as fallback } from '../data/mock';
+import api, { mediaUrl } from '../lib/api';
 
 export default function TestimonialsSection() {
+  const [items, setItems] = useState(fallback);
   const [active, setActive] = useState(0);
-  const t = testimonials[active];
+
+  useEffect(() => {
+    api.get('/public/testimonials').then(({ data }) => {
+      if (data && data.length) {
+        setItems(data.map((t) => ({ ...t, image: t.image ? mediaUrl(t.image) : `https://i.pravatar.cc/150?u=${t.id}` })));
+      }
+    }).catch(() => {});
+  }, []);
+
+  const t = items[active] || items[0];
+  if (!t) return null;
 
   return (
     <section className="relative py-20 lg:py-28 bg-[#0A2540] text-white overflow-hidden">
@@ -36,14 +48,14 @@ export default function TestimonialsSection() {
 
         <div className="flex justify-center gap-3 mt-10">
           <button
-            onClick={() => setActive((active - 1 + testimonials.length) % testimonials.length)}
+            onClick={() => setActive((active - 1 + items.length) % items.length)}
             className="w-12 h-12 border border-white/20 hover:bg-[#FFB800] hover:text-[#0A2540] hover:border-[#FFB800] flex items-center justify-center transition-colors"
             aria-label="Précédent"
           >
             <ChevronLeft size={20} />
           </button>
           <button
-            onClick={() => setActive((active + 1) % testimonials.length)}
+            onClick={() => setActive((active + 1) % items.length)}
             className="w-12 h-12 border border-white/20 hover:bg-[#FFB800] hover:text-[#0A2540] hover:border-[#FFB800] flex items-center justify-center transition-colors"
             aria-label="Suivant"
           >

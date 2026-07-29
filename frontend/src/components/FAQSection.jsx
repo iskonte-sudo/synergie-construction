@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { faqs, company } from '../data/mock';
+import { faqs as fallback, company } from '../data/mock';
+import api from '../lib/api';
 
 export default function FAQSection() {
+  const [items, setItems] = useState(fallback);
   const [open, setOpen] = useState(0);
+
+  useEffect(() => {
+    api.get('/public/faqs').then(({ data }) => {
+      if (data && data.length) setItems(data);
+    }).catch(() => {});
+  }, []);
+
   return (
     <section className="py-20 lg:py-28 bg-[#F5F7FA]">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -23,7 +32,7 @@ export default function FAQSection() {
         </div>
         <div className="lg:col-span-7">
           <div className="space-y-3">
-            {faqs.map((f, i) => (
+            {items.map((f, i) => (
               <div key={i} className="bg-white border border-gray-200 hover:border-[#FFB800] transition-colors">
                 <button
                   onClick={() => setOpen(open === i ? -1 : i)}
