@@ -181,6 +181,14 @@ async def list_public_services():
     return [_clean(i) for i in items]
 
 
+@api_router.get('/public/services/{slug}')
+async def get_public_service(slug: str):
+    item = await db.services.find_one({'slug': slug, 'published': True})
+    if not item:
+        raise HTTPException(404, 'Service introuvable')
+    return _clean(item)
+
+
 @api_router.get('/public/settings')
 async def public_settings():
     s = await db.settings.find_one({'id': 'main'})
@@ -1052,6 +1060,90 @@ async def startup_event():
         ]):
             await db.menu_items.insert_one(MenuItem(**m, order=i).model_dump())
         logger.info('Menu items seeded')
+
+    # Seed services (rich content per service page)
+    if await db.services.count_documents({}) == 0:
+        default_services = [
+            {
+                'slug': 'etudes-fondations',
+                'title': 'Études et Plans de Fondations',
+                'short': 'Études techniques pour garantir solidité et durabilité.',
+                'description': "Nos experts réalisent les études techniques nécessaires pour garantir la solidité et la durabilité de vos ouvrages.",
+                'long_description': "Nous réalisons des études techniques approfondies pour déterminer les solutions de fondation les mieux adaptées à la nature du sol et aux exigences de votre projet. Notre approche combine expertise géotechnique, précision des calculs et conformité aux normes en vigueur.",
+                'image': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80',
+                'hero_image': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1920&q=80',
+                'icon': 'Hammer',
+                'features': ['Études Géotechniques', 'Dimensionnement des Fondations', 'Calculs Structuraux', 'Études de Stabilité'],
+                'sub_services': [
+                    {'title': 'Étude géotechnique', 'description': "Analyse complète du sol avant construction.", 'icon': 'Layers'},
+                    {'title': 'Plans de fondations', 'description': "Conception des fondations adaptées à votre projet.", 'icon': 'FileText'},
+                ],
+                'faqs': [
+                    {'question': "Combien de temps prend une étude de fondations ?", 'answer': "Entre 2 et 4 semaines selon la complexité du terrain."},
+                ],
+                'cta_title': "Prêt à lancer votre projet ?",
+                'cta_text': "Recevez un devis détaillé sous 24h pour vos études techniques.",
+            },
+            {
+                'slug': 'suivi-controle',
+                'title': 'Suivi et Contrôle des Travaux',
+                'short': "Accompagnement et supervision rigoureuse des chantiers.",
+                'description': "Nos spécialistes vous accompagnent dans toutes vos prises de décision liées à la construction.",
+                'long_description': "Nous assurons une supervision rigoureuse de chaque étape de votre chantier afin de garantir le respect des normes, des budgets et des délais convenus.",
+                'image': 'https://images.unsplash.com/photo-1587582423116-ec07293f0395?auto=format&fit=crop&w=1200&q=80',
+                'hero_image': 'https://images.unsplash.com/photo-1587582423116-ec07293f0395?auto=format&fit=crop&w=1920&q=80',
+                'icon': 'HardHat',
+                'features': ['Coordination des Travaux', 'Contrôle Qualité', 'Suivi Budgétaire', 'Respect des Délais'],
+            },
+            {
+                'slug': 'renovation',
+                'title': 'Rénovation et Réhabilitation',
+                'short': "Modernisation et réhabilitation de bâtiments existants.",
+                'description': "Nous redonnons vie à vos bâtiments grâce à des solutions modernes et adaptées.",
+                'long_description': "Nous redonnons vie à vos bâtiments grâce à des solutions modernes et adaptées. De la rénovation légère à la réhabilitation complète, nous transformons vos espaces.",
+                'image': 'https://images.unsplash.com/photo-1621511075938-f03482369feb?auto=format&fit=crop&w=1200&q=80',
+                'hero_image': 'https://images.unsplash.com/photo-1621511075938-f03482369feb?auto=format&fit=crop&w=1920&q=80',
+                'icon': 'Wrench',
+                'features': ['Diagnostic Complet', 'Rénovation Intérieure', 'Réhabilitation Structurelle', 'Mise aux Normes'],
+            },
+            {
+                'slug': 'vrd-travaux-publics',
+                'title': 'VRD & Travaux Publics',
+                'short': "Voirie et réseaux divers pour tous types de projets.",
+                'description': "Nous intervenons dans les travaux de Voirie et Réseaux Divers pour les projets résidentiels, industriels et institutionnels.",
+                'long_description': "Nous intervenons dans les travaux de Voirie et Réseaux Divers (VRD) pour les projets résidentiels, industriels et institutionnels, garantissant des infrastructures fiables.",
+                'image': 'https://images.unsplash.com/photo-1536895058696-a69b1c7ba34f?auto=format&fit=crop&w=1200&q=80',
+                'hero_image': 'https://images.unsplash.com/photo-1536895058696-a69b1c7ba34f?auto=format&fit=crop&w=1920&q=80',
+                'icon': 'Truck',
+                'features': ["Voirie & Chaussées", "Réseaux d'Eau", "Réseaux Électriques", "Assainissement"],
+            },
+            {
+                'slug': 'plans-2d-3d',
+                'title': 'Plans Architecturaux 2D & 3D',
+                'short': "Visualisez votre projet avant sa réalisation.",
+                'description': "Nous réalisons des plans détaillés et des modélisations 3D permettant de visualiser votre projet avant sa construction.",
+                'long_description': "Nous réalisons des plans détaillés et des modélisations 3D permettant de visualiser votre projet avant sa construction, facilitant la prise de décision.",
+                'image': 'https://images.unsplash.com/photo-1608303588026-884930af2559?auto=format&fit=crop&w=1200&q=80',
+                'hero_image': 'https://images.unsplash.com/photo-1608303588026-884930af2559?auto=format&fit=crop&w=1920&q=80',
+                'icon': 'PenTool',
+                'features': ['Plans 2D Détaillés', 'Modélisation 3D', 'Rendus Photoréalistes', 'Visites Virtuelles'],
+            },
+            {
+                'slug': 'conseil-technique',
+                'title': 'Conseil et Assistance Technique',
+                'short': 'Expertise technique pour réussir vos projets.',
+                'description': "Nous assurons un suivi rigoureux de vos chantiers afin de garantir le respect des normes, des budgets et des délais.",
+                'long_description': "Notre équipe d'experts vous offre un conseil personnalisé et une assistance technique complète pour optimiser la réussite de vos projets de construction.",
+                'image': 'https://images.unsplash.com/photo-1542621334-a254cf47733d?auto=format&fit=crop&w=1200&q=80',
+                'hero_image': 'https://images.unsplash.com/photo-1542621334-a254cf47733d?auto=format&fit=crop&w=1920&q=80',
+                'icon': 'ClipboardCheck',
+                'features': ['Audit Technique', 'Conseil Stratégique', 'Optimisation des Coûts', 'Assistance Réglementaire'],
+            },
+        ]
+        for i, s in enumerate(default_services):
+            svc = Service(**s, order=i)
+            await db.services.insert_one(svc.model_dump())
+        logger.info('Services seeded')
 
 
 @app.on_event('shutdown')

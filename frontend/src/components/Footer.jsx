@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin, Twitter, Youtube, MessageCircle, Music2, ArrowRight, Send } from 'lucide-react';
-import { company, services, socials } from '../data/mock';
+import { company, socials } from '../data/mock';
+import { useServices } from '../hooks/useServices';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
 import { useContent } from '../hooks/useContent';
 import logo from '../assets/logo.png';
@@ -11,6 +12,7 @@ const SOCIAL_ICONS = { Facebook, Instagram, Linkedin, Twitter, Youtube, MessageC
 export default function Footer() {
   const { openModal } = useQuoteModal();
   const { t } = useContent();
+  const { services } = useServices();
   return (
     <footer className="bg-[#061629] text-gray-300">
       {/* CTA strip */}
@@ -67,7 +69,7 @@ export default function Footer() {
             {services.slice(0, 6).map((s) => (
               <li key={s.id}>
                 <Link
-                  to={`/services/${s.id}`}
+                  to={`/services/${s.slug}`}
                   className="text-sm text-gray-400 hover:text-[#FFB800] hover:pl-1 transition-all inline-flex items-center gap-2"
                 >
                   <span className="w-1 h-1 bg-[#FFB800]" /> {s.title}

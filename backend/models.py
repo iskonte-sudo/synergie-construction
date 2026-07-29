@@ -136,8 +136,18 @@ class ServiceCreate(BaseModel):
     description: str
     long_description: Optional[str] = ''
     image: Optional[str] = None
+    hero_image: Optional[str] = ''  # Banner image on the detail page
     icon: str = 'Hammer'
     features: List[str] = []
+    gallery: List[str] = []  # Additional images URLs
+    sub_services: List[Dict[str, Any]] = []  # [{title, description, icon}]
+    faqs: List[Dict[str, str]] = []  # [{question, answer}]
+    cta_title: Optional[str] = ''
+    cta_text: Optional[str] = ''
+    cta_button_label: Optional[str] = 'Demander un devis'
+    seo_title: Optional[str] = ''
+    seo_description: Optional[str] = ''
+    seo_og_image: Optional[str] = ''
     slug: str
     featured: bool = False
     published: bool = True
