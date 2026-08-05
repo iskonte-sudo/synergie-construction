@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Calendar, ArrowUpRight, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { MapPin, Calendar, ArrowUpRight, X, Loader2 } from 'lucide-react';
 import PageBanner from '../components/PageBanner';
-import { projects } from '../data/mock';
+import api, { mediaUrl } from '../lib/api';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
 
 const categories = ['Tous', 'Résidentiel', 'Commercial', 'Industriel', 'Institutionnel', 'Rénovation'];
 
 export default function Projects() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('Tous');
   const [active, setActive] = useState(null);
   const { openModal } = useQuoteModal();
+
+  useEffect(() => {
+    api.get('/public/projects')
+      .then(({ data }) => setProjects(data || []))
+      .catch(() => setProjects([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = filter === 'Tous' ? projects : projects.filter((p) => p.category === filter);
 
   return (
@@ -41,11 +50,17 @@ export default function Projects() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="projects-grid">
+            {loading && (
+              <div className="col-span-full flex justify-center py-12"><Loader2 size={32} className="animate-spin text-[#FFB800]" /></div>
+            )}
+            {!loading && filtered.length === 0 && (
+              <div className="col-span-full text-center text-gray-400 py-16">Aucune réalisation à afficher pour le moment.</div>
+            )}
             {filtered.map((p) => (
-              <div key={p.id} className="service-card group relative overflow-hidden shadow-sm hover:shadow-2xl bg-white">
+              <div key={p.id} data-testid={`project-card-${p.id}`} className="service-card group relative overflow-hidden shadow-sm hover:shadow-2xl bg-white">
                 <div className="relative h-72 overflow-hidden bg-gray-100">
-                  <img src={p.image} alt={p.title} loading="lazy" className="card-img w-full h-full object-cover" />
+                  <img src={mediaUrl(p.image)} alt={p.title} loading="lazy" className="card-img w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0A2540]/95 via-[#0A2540]/30 to-transparent opacity-90" />
                   <div className="absolute top-4 left-4 bg-[#FFB800] text-[#0A2540] text-xs font-bold uppercase px-3 py-1 tracking-wider">{p.category}</div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
@@ -80,7 +95,7 @@ export default function Projects() {
             <button onClick={() => setActive(null)} className="absolute top-4 right-4 w-10 h-10 bg-[#0A2540] text-white flex items-center justify-center z-10 hover:bg-[#FFB800] hover:text-[#0A2540]">
               <X size={20} />
             </button>
-            <img src={active.image} alt={active.title} className="w-full h-80 object-cover" />
+            <img src={mediaUrl(active.image)} alt={active.title} className="w-full h-80 object-cover" />
             <div className="p-8">
               <div className="inline-block bg-[#FFB800] text-[#0A2540] text-xs font-bold uppercase px-3 py-1 tracking-wider mb-3">{active.category}</div>
               <h3 className="font-heading text-3xl text-[#0A2540] font-extrabold uppercase">{active.title}</h3>

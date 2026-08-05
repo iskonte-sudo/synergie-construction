@@ -1179,6 +1179,63 @@ async def startup_event():
             await db.services.insert_one(svc.model_dump())
         logger.info('Services seeded')
 
+    # Seed projects (migrated from frontend hardcoded content)
+    if await db.projects.count_documents({}) == 0:
+        default_projects = [
+            {
+                'title': 'Villa Moderne Almadies',
+                'category': 'Résidentiel',
+                'location': 'Almadies, Dakar',
+                'year': 2025,
+                'image': 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+                'description': "Construction d'une villa moderne de 4 chambres avec piscine.",
+            },
+            {
+                'title': 'Immeuble Commercial Plateau',
+                'category': 'Commercial',
+                'location': 'Plateau, Dakar',
+                'year': 2024,
+                'image': 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+                'description': 'Immeuble de bureaux R+5 avec parking sous-sol.',
+            },
+            {
+                'title': 'Résidence Premium Mermoz',
+                'category': 'Résidentiel',
+                'location': 'Mermoz, Dakar',
+                'year': 2025,
+                'image': 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80',
+                'description': 'Résidence haut standing de 12 logements.',
+            },
+            {
+                'title': 'Centre Médical Parcelles',
+                'category': 'Institutionnel',
+                'location': 'Parcelles Assainies, Dakar',
+                'year': 2024,
+                'image': 'https://images.unsplash.com/photo-1587582423116-ec07293f0395?auto=format&fit=crop&w=1200&q=80',
+                'description': 'Centre médical moderne avec équipements de pointe.',
+            },
+            {
+                'title': 'Complexe Industriel Thiès',
+                'category': 'Industriel',
+                'location': 'Thiès, Sénégal',
+                'year': 2023,
+                'image': 'https://images.unsplash.com/photo-1536895058696-a69b1c7ba34f?auto=format&fit=crop&w=1200&q=80',
+                'description': 'Usine de transformation avec entrepôts.',
+            },
+            {
+                'title': 'Rénovation Villa Yoff',
+                'category': 'Rénovation',
+                'location': 'Yoff, Dakar',
+                'year': 2025,
+                'image': 'https://images.unsplash.com/photo-1621511075938-f03482369feb?auto=format&fit=crop&w=1200&q=80',
+                'description': "Réhabilitation complète d'une villa des années 90.",
+            },
+        ]
+        for p in default_projects:
+            proj = Project(**p, published=True, status='termine')
+            await db.projects.insert_one(proj.model_dump())
+        logger.info(f'Projects seeded ({len(default_projects)})')
+
 
 @app.on_event('shutdown')
 async def shutdown_db_client():
