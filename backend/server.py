@@ -53,8 +53,8 @@ security = HTTPBearer(auto_error=False)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Serve uploaded files
-app.mount('/uploads', StaticFiles(directory=str(UPLOADS_DIR)), name='uploads')
+# Serve uploaded files (mounted under /api so K8s ingress routes it to backend)
+app.mount('/api/uploads', StaticFiles(directory=str(UPLOADS_DIR)), name='uploads')
 
 
 # ----------------------- AUTH DEPENDENCIES -----------------------
@@ -576,7 +576,7 @@ async def upload_media(
     with open(file_path, 'wb') as f:
         shutil.copyfileobj(file.file, f)
     size = file_path.stat().st_size
-    url = f"/uploads/{folder}/{name}"
+    url = f"/api/uploads/{folder}/{name}"
     media = Media(
         name=file.filename, url=url, mime=file.content_type or 'application/octet-stream',
         size=size, folder=folder, uploaded_by=user.email,
@@ -939,6 +939,40 @@ app.add_middleware(
 
 @app.on_event('startup')
 async def startup_event():
+    # Migrate legacy media URLs from /uploads/* -> /api/uploads/* (K8s ingress requires /api prefix)
+    try:
+        collections_with_url_field = ['media']
+        for col in collections_with_url_field:
+            await db[col].update_many(
+                {'url': {'$regex': '^/uploads/'}},
+                [{'$set': {'url': {'$concat': ['/api', '$url']}}}],
+            )
+        # Update embedded URL fields in various documents
+        for col, field in [
+            ('services', 'image'), ('services', 'hero_image'), ('services', 'seo_og_image'),
+            ('projects', 'image'),
+            ('slides', 'image'),
+            ('testimonials', 'image'),
+            ('team', 'photo'),
+            ('partners', 'logo'),
+            ('blog_posts', 'cover_image'), ('blog_posts', 'og_image'),
+        ]:
+            await db[col].update_many(
+                {field: {'$regex': '^/uploads/'}},
+                [{'$set': {field: {'$concat': ['/api', f'${field}']}}}],
+            )
+        # gallery arrays and content_blocks (value may be a string URL)
+        async for svc in db.services.find({'gallery': {'$elemMatch': {'$regex': '^/uploads/'}}}):
+            new_gallery = [(f'/api{u}' if isinstance(u, str) and u.startswith('/uploads/') else u) for u in (svc.get('gallery') or [])]
+            await db.services.update_one({'id': svc['id']}, {'$set': {'gallery': new_gallery}})
+        await db.content_blocks.update_many(
+            {'value': {'$regex': '^/uploads/'}},
+            [{'$set': {'value': {'$concat': ['/api', '$value']}}}],
+        )
+        logger.info('Legacy /uploads URLs migration completed')
+    except Exception as e:
+        logger.warning(f'URL migration warning: {e}')
+
     # Seed super admin
     existing = await db.users.find_one({'email': 'admin@synergieconstruction.com'})
     if not existing:

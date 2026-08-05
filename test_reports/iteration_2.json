@@ -1,0 +1,24 @@
+{
+  "summary": "Validated the image upload fix (moving static mount from /uploads to /api/uploads so K8s ingress routes it to the backend). Backend pytest suite (6/6 passed) + Playwright E2E admin flow + curl verification of public URLs all confirm the fix works.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_upload_fix.py",
+    "/app/test_reports/pytest/upload_fix.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is 1186 lines — should be split into modules (auth, media, services, seed, etc.) as it exceeds the 700-line guideline.",
+    "Migration in startup_event runs on every startup with $regex + aggregation update — idempotent but slightly wasteful; consider a one-shot migration flag stored in a `migrations` collection.",
+    "Media DELETE endpoint uses Path(m['url']).name which now includes the /api prefix segment in path; still works because it takes only the basename, but building the path from folder+basename via url is fragile — better to store the disk path or filename directly.",
+    "CORS is set with allow_origins=['*'] and allow_credentials=True which is invalid per spec (browsers will reject). Consider whitelisting origins."
+  ],
+  "updated_files": ["/app/backend/tests/test_upload_fix.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@synergieconstruction.com / Synergie2025!",
+  "seed_data_creation": "None — used existing seeded 'etudes-fondations' service for E2E upload test; test media row is cleaned up.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The image upload fix is confirmed working on preview. GET on /api/uploads/<path> returns image/*, GET on /uploads/<path> returns SPA HTML (as expected — the ingress routes only /api/* to backend). Legacy DB URLs were migrated at startup. User needs to redeploy production for the fix to apply there.",
+  "rca of the issue": "ROOT CAUSE: Kubernetes ingress only forwards paths prefixed with /api/* to the backend container (port 8001). Any other path hits the React SPA container which serves index.html for all routes. The previous StaticFiles mount was at /uploads, so image URLs like /uploads/services/foo.png were served as text/html (SPA index) rather than the actual image file. FIX: Moved the mount to /api/uploads in server.py, updated upload_media to emit '/api/uploads/...' URLs, and added a startup migration to backfill existing DB records across media, services (image/hero_image/seo_og_image/gallery), projects, slides, testimonials, team, partners, blog_posts and content_blocks. VERIFIED: curl of /api/uploads/... returns 200 image/png; admin upload flow shows working thumbnail; persistence across reload confirmed; all migrated URLs in /api/admin/media list start with /api/uploads/."
+}
