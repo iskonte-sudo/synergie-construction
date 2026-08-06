@@ -166,6 +166,9 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
       const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       if (!data?.url) throw new Error("Réponse invalide du serveur (URL manquante)");
       upd(imageField, data.url);
+      // Prefer server URL after successful upload: revoke blob so admin sees the real stored image
+      URL.revokeObjectURL(blob);
+      setPreviewUrl(null);
       toast.success('Image téléchargée');
     } catch (e) {
       const detail = e?.response?.data?.detail || e?.message || 'Échec de l\'upload';
