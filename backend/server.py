@@ -1,9 +1,8 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, UploadFile, File, Form, Query
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse, FileResponse, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from starlette.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -15,7 +14,14 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional
 
+# Load env BEFORE importing storage (it reads EMERGENT_LLM_KEY at import time)
+load_dotenv(Path(__file__).parent / '.env')
+
 from auth_utils import hash_password, verify_password, create_access_token, decode_token
+from storage import (
+    init_storage, storage_available, put_object, get_object,
+    make_storage_path, guess_content_type, local_uploads_dir,
+)
 from models import (
     UserCreate, UserUpdate, UserInDB, UserPublic, LoginRequest, LoginResponse, ChangePasswordRequest,
     QuoteCreate, Quote, QuoteStatusUpdate,
@@ -53,8 +59,21 @@ security = HTTPBearer(auto_error=False)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Serve uploaded files (mounted under /api so K8s ingress routes it to backend)
-app.mount('/api/uploads', StaticFiles(directory=str(UPLOADS_DIR)), name='uploads')
+
+# ----------------------- UPLOADS FILE-SERVING -----------------------
+# Files are stored in persistent Emergent Object Storage. Legacy files still on
+# local disk (preview) are served as a fallback so existing DB URLs keep working.
+@api_router.get('/uploads/{path:path}')
+async def serve_upload(path: str):
+    obj = get_object(f"synergie/uploads/{path}")
+    if obj is not None:
+        data, ctype = obj
+        return Response(content=data, media_type=ctype or guess_content_type(path))
+    # Fallback: legacy local disk (preview or previously uploaded files)
+    local = UPLOADS_DIR / path
+    if local.exists() and local.is_file():
+        return FileResponse(str(local), media_type=guess_content_type(path))
+    raise HTTPException(404, 'File not found')
 
 
 # ----------------------- AUTH DEPENDENCIES -----------------------
@@ -593,17 +612,32 @@ async def upload_media(
     folder: str = Form('general'),
     user: UserInDB = Depends(get_current_user),
 ):
-    ext = Path(file.filename).suffix
+    folder = (folder or 'general').strip('/') or 'general'
+    ext = Path(file.filename or '').suffix
     name = f"{uuid.uuid4().hex}{ext}"
-    folder_path = UPLOADS_DIR / folder
-    folder_path.mkdir(exist_ok=True, parents=True)
-    file_path = folder_path / name
-    with open(file_path, 'wb') as f:
-        shutil.copyfileobj(file.file, f)
-    size = file_path.stat().st_size
+    data = await file.read()
+    size = len(data)
+    mime = file.content_type or guess_content_type(file.filename or name)
+
+    # Primary: persistent Emergent Object Storage
+    stored_path = None
+    obj_result = put_object(f"synergie/uploads/{folder}/{name}", data, mime)
+    if obj_result:
+        stored_path = obj_result.get('path') or f"synergie/uploads/{folder}/{name}"
+        logger.info(f'Uploaded to object storage: {stored_path}')
+    else:
+        # Fallback: local disk (preview/dev without EMERGENT_LLM_KEY)
+        folder_path = UPLOADS_DIR / folder
+        folder_path.mkdir(exist_ok=True, parents=True)
+        file_path = folder_path / name
+        with open(file_path, 'wb') as f:
+            f.write(data)
+        logger.warning(f'Object storage unavailable — saved locally: {file_path}')
+
+    # URL is always the same shape so the frontend does not need to change
     url = f"/api/uploads/{folder}/{name}"
     media = Media(
-        name=file.filename, url=url, mime=file.content_type or 'application/octet-stream',
+        name=file.filename, url=url, mime=mime,
         size=size, folder=folder, uploaded_by=user.email,
     )
     await db.media.insert_one(media.model_dump())
@@ -964,6 +998,16 @@ app.add_middleware(
 
 @app.on_event('startup')
 async def startup_event():
+    # Initialize Emergent Object Storage (persistent file storage). Non-fatal if it fails
+    # — the media endpoint falls back to local disk.
+    try:
+        if init_storage():
+            logger.info('Emergent object storage ready')
+        else:
+            logger.warning('Emergent object storage NOT available — using local disk fallback (files will be lost on redeploy)')
+    except Exception as e:
+        logger.error(f'Storage init error: {e}')
+
     # Migrate legacy media URLs from /uploads/* -> /api/uploads/* (K8s ingress requires /api prefix)
     try:
         collections_with_url_field = ['media']
