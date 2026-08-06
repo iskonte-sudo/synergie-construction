@@ -41,14 +41,11 @@ Completely recreate the website `synergieconstruction.com` with a modern, premiu
 - Admin dashboard with JWT auth, dark mode
 - CRUD for: quotes, projects, services, simulator config, testimonials, FAQ, menu, slides, team, blog posts, media
 - Global CMS content editor (key/value `content_blocks`)
-- **Services CMS — 2026-02-29** ✅ NEW
-  - Extended `Service` model: `hero_image`, `gallery[]`, `sub_services[]`, `faqs[]`, `cta_title`, `cta_text`, `cta_button_label`, `seo_title`, `seo_description`, `seo_og_image`
-  - New public endpoint `GET /api/public/services/{slug}`
-  - Services auto-seeded at startup with 6 default services
-  - Admin tabbed form (8 tabs: Info, Contenu, Caractéristiques, Prestations, Galerie, FAQ, CTA, SEO)
-  - Frontend `ServiceDetail.jsx` fully dynamic (fetches by slug), renders all rich sections conditionally
-  - `ServicesGrid.jsx` + `Footer.jsx` now fetch services from backend via `useServices` hook
-  - Tested: 7/7 backend, 100% frontend flows
+- **Services CMS — 2026-02-29** ✅ Extended Service model with rich fields, tabbed admin form, dynamic ServiceDetail page.
+- **Image upload fix — 2026-02-29** ✅ Static mount moved to `/api/uploads` (K8s ingress only routes `/api/*` to backend); DB records auto-migrated at startup.
+- **Projects migration — 2026-02** ✅ 6 hardcoded projects seeded to DB; `Projects.jsx` fetches from `/api/public/projects`.
+- **Gallery + Lightbox — 2026-02** ✅ Service gallery is now media-object array (image or video) with title/desc/alt/category/published/order. Admin gallery manager (multi-upload, drag&drop reorder, replace, per-item metadata). Frontend lightbox with keyboard/swipe/pinch-zoom/prev-next/click-outside/ESC.
+- **Dynamic Contact Info (Global Settings) — 2026-02** ✅ Address/phone/whatsapp/email/hours/google_maps_link centralised in `site_settings` (single doc, id=main). Admin `/admin/parametres` edits all fields. `SettingsBootstrapper` in App.js fetches once at boot and mutates the shared `company` object → header/footer/contact/all pages auto-update. Legacy hardcoded values (Parcelles Assainies, +221 77 165 80 42) migrated to new defaults (AVENUE BOURGUIBA IMMEUBLE KFC, +221 76 158 20 20).
 
 ## Roadmap
 

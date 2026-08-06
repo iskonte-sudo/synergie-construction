@@ -1,19 +1,37 @@
 // Mock data for Synergie Construction Group
+// NOTE: `company` contact fields (phone, phoneDisplay, whatsapp, email, address, mapLink, hours)
+// are LIVE — populated at boot from /api/public/settings via SettingsBootstrapper.
+// The values below are only fallbacks used before settings load.
 
 export const company = {
   name: 'Synergie Construction Group',
   shortName: 'SCG',
   tagline: 'Construire l\'avenir avec précision',
-  phone: '+221771658042',
-  phoneDisplay: '+221 77 165 80 42',
-  whatsapp: '221771658042',
+  phone: '+221761582020',
+  phoneDisplay: '+221 76 158 20 20',
+  whatsapp: '221761582020',
   email: 'contact@synergieconstruction.com',
-  address: 'Parcelles Assainies, Dakar, Sénégal',
+  address: 'AVENUE BOURGUIBA IMMEUBLE KFC',
+  mapLink: 'https://maps.google.com/?q=Avenue+Bourguiba+Immeuble+KFC+Dakar',
+  hours: 'Lun-Ven: 8h-18h | Sam: 9h-13h',
   experience: 30,
   projects: 250,
   clients: 180,
   teamMembers: 45,
 };
+
+// Called by <SettingsBootstrapper> to sync live values from the DB.
+export function applyLiveSettings(s) {
+  if (!s || typeof s !== 'object') return;
+  if (s.company_name) company.name = s.company_name;
+  if (s.phone) company.phone = s.phone;
+  if (s.phone_display) company.phoneDisplay = s.phone_display;
+  if (s.whatsapp) company.whatsapp = s.whatsapp;
+  if (s.email) company.email = s.email;
+  if (s.address) company.address = s.address;
+  if (s.google_maps_link) company.mapLink = s.google_maps_link;
+  if (s.hours) company.hours = s.hours;
+}
 
 export const socials = [
   { name: 'Facebook', icon: 'Facebook', url: 'https://www.facebook.com/synergieconstruction' },

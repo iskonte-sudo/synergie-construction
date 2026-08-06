@@ -23,7 +23,7 @@ export default function Contact() {
               { icon: MapPin, title: 'Adresse', content: company.address },
               { icon: Phone, title: 'Téléphone', content: company.phoneDisplay, href: `tel:${company.phone}` },
               { icon: Mail, title: 'Email', content: company.email, href: `mailto:${company.email}` },
-              { icon: Clock, title: 'Horaires', content: 'Lun-Ven: 8h-18h | Sam: 9h-13h' },
+              { icon: Clock, title: 'Horaires', content: company.hours },
             ].map((c, i) => (
               <div key={i} className="group p-7 bg-[#F5F7FA] hover:bg-[#0A2540] transition-colors duration-500 border-b-4 border-[#FFB800]">
                 <div className="w-14 h-14 bg-[#FFB800] flex items-center justify-center text-[#0A2540] mb-4">
@@ -67,7 +67,7 @@ export default function Contact() {
               <div className="h-64 overflow-hidden border border-gray-200">
                 <iframe
                   title="Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15512.0!2d-17.4404!3d14.7651!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zUGFyY2VsbGVzIEFzc2FpbmllcywgRGFrYXIsIFPDqW7DqWdhbA!5e0!3m2!1sfr!2ssn!4v1"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(company.address)}&output=embed`}
                   width="100%"
                   height="100%"
                   loading="lazy"

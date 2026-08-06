@@ -1017,12 +1017,30 @@ async def startup_event():
             {'name': 'Facebook', 'icon': 'Facebook', 'url': 'https://www.facebook.com/synergieconstruction'},
             {'name': 'Instagram', 'icon': 'Instagram', 'url': 'https://www.instagram.com/synergieconstruction'},
             {'name': 'LinkedIn', 'icon': 'Linkedin', 'url': 'https://www.linkedin.com/company/synergieconstruction'},
-            {'name': 'WhatsApp', 'icon': 'MessageCircle', 'url': 'https://wa.me/221771658042'},
+            {'name': 'WhatsApp', 'icon': 'MessageCircle', 'url': 'https://wa.me/221761582020'},
             {'name': 'YouTube', 'icon': 'Youtube', 'url': 'https://www.youtube.com/@synergieconstruction'},
             {'name': 'TikTok', 'icon': 'Music2', 'url': 'https://www.tiktok.com/@synergieconstruction'},
         ])
         await db.settings.insert_one(s.model_dump())
         logger.info('Site settings seeded')
+    else:
+        # Migrate old default phone/address to the new company info (one-time)
+        legacy_phone_variants = {'+221771658042', '+221 77 165 80 42'}
+        legacy_address_variants = {'Parcelles Assainies, Dakar, Sénégal'}
+        upd = {}
+        if existing_settings.get('phone') in legacy_phone_variants:
+            upd['phone'] = '+221761582020'
+        if existing_settings.get('phone_display') in legacy_phone_variants:
+            upd['phone_display'] = '+221 76 158 20 20'
+        if existing_settings.get('whatsapp') in {'221771658042'}:
+            upd['whatsapp'] = '221761582020'
+        if existing_settings.get('address') in legacy_address_variants:
+            upd['address'] = 'AVENUE BOURGUIBA IMMEUBLE KFC'
+        if not existing_settings.get('google_maps_link'):
+            upd['google_maps_link'] = 'https://maps.google.com/?q=Avenue+Bourguiba+Immeuble+KFC+Dakar'
+        if upd:
+            await db.settings.update_one({'id': 'main'}, {'$set': upd})
+            logger.info(f'Settings migrated to new contact info: {list(upd.keys())}')
 
 
     # Seed simulator config

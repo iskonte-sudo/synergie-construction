@@ -222,11 +222,12 @@ class AuditLog(BaseModel):
 class SiteSettings(BaseModel):
     id: str = 'main'
     company_name: str = 'Synergie Construction Group'
-    phone: str = '+221771658042'
-    phone_display: str = '+221 77 165 80 42'
-    whatsapp: str = '221771658042'
+    phone: str = '+221761582020'
+    phone_display: str = '+221 76 158 20 20'
+    whatsapp: str = '221761582020'
     email: str = 'contact@synergieconstruction.com'
-    address: str = 'Parcelles Assainies, Dakar, Sénégal'
+    address: str = 'AVENUE BOURGUIBA IMMEUBLE KFC'
+    google_maps_link: str = 'https://maps.google.com/?q=Avenue+Bourguiba+Immeuble+KFC+Dakar'
     hours: str = 'Lun-Ven: 8h-18h | Sam: 9h-13h'
     socials: List[Dict[str, str]] = []
     seo_title: str = 'Synergie Construction Group - Construction au Sénégal'
@@ -241,6 +242,7 @@ class SiteSettingsUpdate(BaseModel):
     whatsapp: Optional[str] = None
     email: Optional[str] = None
     address: Optional[str] = None
+    google_maps_link: Optional[str] = None
     hours: Optional[str] = None
     socials: Optional[List[Dict[str, str]]] = None
     seo_title: Optional[str] = None

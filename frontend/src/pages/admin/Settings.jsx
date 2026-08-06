@@ -40,20 +40,21 @@ export default function AdminSettings() {
   return (
     <div>
       <PageHeader title="Paramètres du site" subtitle="Coordonnées, réseaux sociaux et SEO"
-        actions={<button onClick={save} disabled={saving} className="adm-btn adm-btn-primary">{saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Enregistrer</button>} />
+        actions={<button onClick={save} disabled={saving} className="adm-btn adm-btn-primary" data-testid="settings-save">{saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Enregistrer</button>} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="adm-card p-6 space-y-4">
           <h3 className="font-heading font-bold text-lg text-[#0A2540] dark:text-white uppercase">Informations de l'entreprise</h3>
           <Field label="Nom de l'entreprise"><input value={s.company_name || ''} onChange={(e) => upd('company_name', e.target.value)} className="adm-input" /></Field>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Téléphone (format E164)"><input value={s.phone || ''} onChange={(e) => upd('phone', e.target.value)} className="adm-input" placeholder="+221771658042" /></Field>
-            <Field label="Téléphone (affichage)"><input value={s.phone_display || ''} onChange={(e) => upd('phone_display', e.target.value)} className="adm-input" placeholder="+221 77 165 80 42" /></Field>
+            <Field label="Téléphone (format E164)"><input value={s.phone || ''} onChange={(e) => upd('phone', e.target.value)} className="adm-input" placeholder="+221761582020" data-testid="settings-phone" /></Field>
+            <Field label="Téléphone (affichage)"><input value={s.phone_display || ''} onChange={(e) => upd('phone_display', e.target.value)} className="adm-input" placeholder="+221 76 158 20 20" data-testid="settings-phone-display" /></Field>
           </div>
-          <Field label="WhatsApp (chiffres uniquement)"><input value={s.whatsapp || ''} onChange={(e) => upd('whatsapp', e.target.value)} className="adm-input" placeholder="221771658042" /></Field>
-          <Field label="Email"><input type="email" value={s.email || ''} onChange={(e) => upd('email', e.target.value)} className="adm-input" /></Field>
-          <Field label="Adresse"><textarea rows={2} value={s.address || ''} onChange={(e) => upd('address', e.target.value)} className="adm-input resize-none" /></Field>
-          <Field label="Horaires"><input value={s.hours || ''} onChange={(e) => upd('hours', e.target.value)} className="adm-input" /></Field>
+          <Field label="WhatsApp (chiffres uniquement)"><input value={s.whatsapp || ''} onChange={(e) => upd('whatsapp', e.target.value)} className="adm-input" placeholder="221761582020" data-testid="settings-whatsapp" /></Field>
+          <Field label="Email"><input type="email" value={s.email || ''} onChange={(e) => upd('email', e.target.value)} className="adm-input" data-testid="settings-email" /></Field>
+          <Field label="Adresse"><textarea rows={2} value={s.address || ''} onChange={(e) => upd('address', e.target.value)} className="adm-input resize-none" data-testid="settings-address" /></Field>
+          <Field label="Lien Google Maps"><input value={s.google_maps_link || ''} onChange={(e) => upd('google_maps_link', e.target.value)} className="adm-input" placeholder="https://maps.google.com/?q=..." data-testid="settings-maps-link" /></Field>
+          <Field label="Horaires"><input value={s.hours || ''} onChange={(e) => upd('hours', e.target.value)} className="adm-input" data-testid="settings-hours" /></Field>
         </div>
 
         <div className="adm-card p-6 space-y-4">

@@ -9,6 +9,7 @@ import QuoteModal from './components/QuoteModal';
 import { QuoteModalProvider } from './contexts/QuoteModalContext';
 import { AuthProvider } from './contexts/AuthContext';
 import api from './lib/api';
+import { applyLiveSettings } from './data/mock';
 
 import Home from './pages/Home';
 import About from './pages/About';
@@ -55,6 +56,23 @@ function VisitTracker() {
   return null;
 }
 
+function SettingsBootstrapper({ children }) {
+  const [tick, setTick] = React.useState(0);
+  useEffect(() => {
+    let alive = true;
+    const load = () => api.get('/public/settings').then(({ data }) => {
+      if (!alive) return;
+      applyLiveSettings(data);
+      setTick((n) => n + 1); // trigger re-render so all consumers of `company` see fresh values
+    }).catch(() => {});
+    load();
+    const onFocus = () => load();
+    window.addEventListener('focus', onFocus);
+    return () => { alive = false; window.removeEventListener('focus', onFocus); };
+  }, []);
+  return <React.Fragment key={tick}>{children}</React.Fragment>;
+}
+
 function PublicLayout({ children }) {
   return (
     <>
@@ -74,6 +92,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <QuoteModalProvider>
+          <SettingsBootstrapper>
           <Routes>
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -111,6 +130,7 @@ export default function App() {
             <Route path="*" element={<PublicLayout><Home /></PublicLayout>} />
           </Routes>
           <Toaster position="top-right" richColors closeButton />
+          </SettingsBootstrapper>
         </QuoteModalProvider>
       </AuthProvider>
     </BrowserRouter>
