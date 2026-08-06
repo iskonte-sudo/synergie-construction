@@ -127,20 +127,64 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
   const [f, setF] = useState(item);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null); // local blob preview shown instantly
+  const [uploadError, setUploadError] = useState('');
+  const [imgError, setImgError] = useState(false);
+  const backdropMouseDown = React.useRef(false);
 
-  const upd = (k, v) => setF({ ...f, [k]: v });
+  const upd = (k, v) => setF((prev) => ({ ...prev, [k]: v }));
+
+  // Clean up blob URLs when component unmounts or preview swapped
+  React.useEffect(() => {
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+  }, [previewUrl]);
 
   const uploadImage = async (file) => {
+    setUploadError('');
+    setImgError(false);
+    // Basic client-side validation
+    if (!file.type.startsWith('image/')) {
+      const msg = `Fichier ignoré : ${file.name} n'est pas une image (${file.type || 'inconnu'}).`;
+      setUploadError(msg); toast.error(msg);
+      return;
+    }
+    const MAX_MB = 15;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      const msg = `Image trop volumineuse (${(file.size / 1024 / 1024).toFixed(1)} Mo). Maximum ${MAX_MB} Mo.`;
+      setUploadError(msg); toast.error(msg);
+      return;
+    }
+    // Instant local preview
+    const blob = URL.createObjectURL(file);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(blob);
     setUploading(true);
     try {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('folder', uploadFolder);
       const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (!data?.url) throw new Error("Réponse invalide du serveur (URL manquante)");
       upd(imageField, data.url);
       toast.success('Image téléchargée');
-    } catch { toast.error('Erreur upload'); }
-    setUploading(false);
+    } catch (e) {
+      const detail = e?.response?.data?.detail || e?.message || 'Échec de l\'upload';
+      setUploadError(String(detail));
+      toast.error(`Erreur upload : ${detail}`);
+      // Revert preview on error
+      URL.revokeObjectURL(blob);
+      setPreviewUrl(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const clearImage = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setUploadError('');
+    setImgError(false);
+    upd(imageField, '');
   };
 
   const save = async () => {
@@ -151,16 +195,33 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
       else await api.post(endpoint, payload);
       toast.success('Enregistré');
       onSaved();
-    } catch (e) { toast.error(e?.response?.data?.detail || 'Erreur'); }
-    setSaving(false);
+    } catch (e) {
+      const detail = e?.response?.data?.detail || 'Erreur';
+      toast.error(String(detail));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Safe outside-click close: only fire when the user both pressed AND released on the backdrop.
+  // Prevents accidental close after native file picker closes.
+  const onBackdropMouseDown = (e) => { backdropMouseDown.current = e.target === e.currentTarget; };
+  const onBackdropClick = (e) => {
+    if (backdropMouseDown.current && e.target === e.currentTarget) onClose();
+    backdropMouseDown.current = false;
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white dark:bg-slate-800 dark:text-white w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      onMouseDown={onBackdropMouseDown}
+      onClick={onBackdropClick}
+      data-testid="crud-modal-backdrop"
+    >
+      <div className="bg-white dark:bg-slate-800 dark:text-white w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()} data-testid="crud-modal">
         <div className="bg-[#0A2540] text-white p-5 flex items-center justify-between sticky top-0 z-10">
           <h3 className="font-heading text-lg font-extrabold uppercase">{item.id ? 'Modifier' : 'Nouveau'} - {title}</h3>
-          <button onClick={onClose} className="w-9 h-9 hover:bg-[#FFB800] hover:text-[#0A2540] flex items-center justify-center"><X size={18} /></button>
+          <button onClick={onClose} className="w-9 h-9 hover:bg-[#FFB800] hover:text-[#0A2540] flex items-center justify-center" data-testid="crud-modal-close"><X size={18} /></button>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           {fields.map((fld) => (
@@ -174,13 +235,16 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
                     {fld.options.map((o) => <option key={o.value || o} value={o.value || o}>{o.label || o}</option>)}
                   </select>
                 ) : fld.type === 'image' ? (
-                  <div>
-                    {f[fld.name] && <div className="mb-2"><img src={mediaUrl(f[fld.name])} alt="" className="h-24 object-cover border border-slate-200 dark:border-slate-700" /></div>}
-                    <label className="adm-btn adm-btn-ghost cursor-pointer">
-                      <Upload size={14} /> {uploading ? 'Upload...' : 'Choisir une image'}
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && uploadImage(e.target.files[0])} />
-                    </label>
-                  </div>
+                  <ImageUploader
+                    value={f[fld.name]}
+                    previewUrl={previewUrl}
+                    onUpload={uploadImage}
+                    onClear={clearImage}
+                    uploading={uploading}
+                    error={uploadError}
+                    imgError={imgError}
+                    setImgError={setImgError}
+                  />
                 ) : fld.type === 'checkbox' ? (
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={!!f[fld.name]} onChange={(e) => upd(fld.name, e.target.checked)} />
@@ -202,11 +266,74 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
           ))}
 
           <div className="md:col-span-2 flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <button onClick={save} disabled={saving} className="adm-btn adm-btn-primary">{saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Enregistrer</button>
-            <button onClick={onClose} className="adm-btn adm-btn-ghost">Annuler</button>
+            <button onClick={save} disabled={saving || uploading} className="adm-btn adm-btn-primary" data-testid="crud-modal-save">{saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Enregistrer</button>
+            <button onClick={onClose} className="adm-btn adm-btn-ghost" data-testid="crud-modal-cancel">Annuler</button>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ImageUploader({ value, previewUrl, onUpload, onClear, uploading, error, imgError, setImgError }) {
+  // Display source: local blob preview (freshest) → server URL → nothing
+  const displaySrc = previewUrl || (value ? mediaUrl(value) : null);
+  return (
+    <div>
+      {displaySrc && !imgError && (
+        <div className="mb-2 relative inline-block" data-testid="image-preview-wrap">
+          <img
+            src={displaySrc}
+            alt=""
+            className="h-32 object-cover border border-slate-200 dark:border-slate-700 max-w-full"
+            onError={() => setImgError(true)}
+            data-testid="image-preview"
+          />
+          {uploading && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white" data-testid="image-uploading">
+              <Loader2 size={22} className="animate-spin" />
+            </div>
+          )}
+          {!uploading && value && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1"
+              data-testid="image-clear"
+              title="Retirer"
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
+      )}
+      {imgError && (
+        <div className="mb-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950 border border-red-200 p-2" data-testid="image-error">
+          <X size={14} /> L&apos;image ne s&apos;affiche pas — URL cassée ou fichier introuvable. Réessayez l&apos;upload.
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <label className="adm-btn adm-btn-ghost cursor-pointer" data-testid="image-upload-btn">
+          <Upload size={14} /> {uploading ? 'Envoi en cours...' : (value ? 'Remplacer' : 'Choisir une image')}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={uploading}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onUpload(file);
+              // Reset input so re-selecting the same file still triggers change
+              e.target.value = '';
+            }}
+            data-testid="image-input"
+          />
+        </label>
+        {uploading && <span className="text-xs text-slate-500 flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Upload…</span>}
+      </div>
+      {error && (
+        <p className="text-xs text-red-600 mt-2" data-testid="upload-error">{error}</p>
+      )}
     </div>
   );
 }
