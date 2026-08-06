@@ -98,15 +98,52 @@ function ServiceForm({ item, onClose, onSaved }) {
     setUploadingKey(null);
   };
 
-  const uploadGalleryImage = async (file) => {
+  const uploadGalleryFiles = async (files) => {
     setUploadingKey('gallery');
+    const newItems = [];
+    const startIdx = (f.gallery || []).length;
+    for (let i = 0; i < files.length; i += 1) {
+      const file = files[i];
+      try {
+        const fd = new FormData();
+        fd.append('file', file); fd.append('folder', 'services');
+        const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        const isVideo = (file.type || '').startsWith('video/');
+        newItems.push({
+          url: data.url,
+          type: isVideo ? 'video' : 'image',
+          title: '', description: '', alt: '', category: '',
+          published: true,
+          order: startIdx + i,
+        });
+      } catch { toast.error(`Erreur upload: ${file.name}`); }
+    }
+    upd('gallery', [...(f.gallery || []), ...newItems]);
+    setUploadingKey(null);
+  };
+
+  const replaceGalleryFile = async (idx, file) => {
+    setUploadingKey(`gallery-${idx}`);
     try {
       const fd = new FormData();
       fd.append('file', file); fd.append('folder', 'services');
       const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      upd('gallery', [...(f.gallery || []), data.url]);
-    } catch { toast.error('Erreur upload'); }
+      const isVideo = (file.type || '').startsWith('video/');
+      upd('gallery', f.gallery.map((it, i) => i === idx ? { ...it, url: data.url, type: isVideo ? 'video' : 'image' } : it));
+    } catch { toast.error('Erreur remplacement'); }
     setUploadingKey(null);
+  };
+
+  const updateGalleryItem = (idx, patch) => {
+    upd('gallery', f.gallery.map((it, i) => i === idx ? { ...it, ...patch } : it));
+  };
+
+  const reorderGallery = (from, to) => {
+    if (from === to) return;
+    const arr = [...(f.gallery || [])];
+    const [moved] = arr.splice(from, 1);
+    arr.splice(to, 0, moved);
+    upd('gallery', arr.map((it, i) => ({ ...it, order: i })));
   };
 
   const save = async () => {
@@ -140,8 +177,7 @@ function ServiceForm({ item, onClose, onSaved }) {
   const removeFaq = (i) => upd('faqs', f.faqs.filter((_, idx) => idx !== i));
   const setFaq = (i, key, v) => upd('faqs', f.faqs.map((x, idx) => idx === i ? { ...x, [key]: v } : x));
 
-  // Gallery
-  const removeGalleryItem = (i) => upd('gallery', f.gallery.filter((_, idx) => idx !== i));
+  // Gallery reorder/remove handled via GalleryManager helpers above
 
   const TABS = [
     { id: 'info', label: 'Informations' },
@@ -257,27 +293,15 @@ function ServiceForm({ item, onClose, onSaved }) {
           )}
 
           {tab === 'gallery' && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <div className="adm-label !mb-0">Galerie d&apos;images</div>
-                  <div className="text-xs text-slate-500 mt-1">Images additionnelles affichées sur la page du service.</div>
-                </div>
-                <label className="adm-btn adm-btn-ghost cursor-pointer text-xs !py-1" data-testid="add-gallery">
-                  <Upload size={12} /> {uploadingKey === 'gallery' ? 'Upload...' : 'Ajouter une image'}
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && uploadGalleryImage(e.target.files[0])} />
-                </label>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {(f.gallery || []).map((url, i) => (
-                  <div key={i} className="relative group">
-                    <img src={mediaUrl(url)} alt="" className="w-full h-24 object-cover border border-slate-200 dark:border-slate-700" />
-                    <button onClick={() => removeGalleryItem(i)} className="absolute top-1 right-1 bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity" data-testid={`remove-gallery-${i}`}><X size={12} /></button>
-                  </div>
-                ))}
-                {(f.gallery || []).length === 0 && <div className="col-span-full text-sm text-slate-400 py-6 text-center flex flex-col items-center gap-2"><ImageIcon size={24} /> Aucune image</div>}
-              </div>
-            </div>
+            <GalleryManager
+              items={f.gallery || []}
+              onAdd={uploadGalleryFiles}
+              onReplace={replaceGalleryFile}
+              onUpdate={updateGalleryItem}
+              onRemove={(i) => upd('gallery', f.gallery.filter((_, idx) => idx !== i))}
+              onReorder={reorderGallery}
+              uploadingKey={uploadingKey}
+            />
           )}
 
           {tab === 'faq' && (
@@ -346,5 +370,112 @@ function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
         <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && onUpload(e.target.files[0])} />
       </label>
     </Field>
+  );
+}
+
+function GalleryManager({ items, onAdd, onReplace, onUpdate, onRemove, onReorder, uploadingKey }) {
+  const [dragOver, setDragOver] = useState(false);
+  const [dragIdx, setDragIdx] = useState(null);
+
+  const onDropZone = (e) => {
+    e.preventDefault(); e.stopPropagation(); setDragOver(false);
+    const files = Array.from(e.dataTransfer.files || []).filter((f) => f.type.startsWith('image/') || f.type.startsWith('video/'));
+    if (files.length) onAdd(files);
+  };
+
+  const onItemDragStart = (i) => setDragIdx(i);
+  const onItemDragOver = (e) => e.preventDefault();
+  const onItemDrop = (e, i) => {
+    e.preventDefault();
+    if (dragIdx !== null && dragIdx !== i) onReorder(dragIdx, i);
+    setDragIdx(null);
+  };
+
+  return (
+    <div>
+      <div className="mb-2">
+        <div className="adm-label !mb-0">Galerie multimédia</div>
+        <div className="text-xs text-slate-500 mt-1">Glissez-déposez images (jpg, png, webp) & vidéos (mp4, webm, mov). Réorganisez par glisser-déposer.</div>
+      </div>
+
+      <label
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDropZone}
+        className={`block border-2 border-dashed cursor-pointer p-6 text-center transition-colors ${dragOver ? 'border-[#FFB800] bg-[#FFB800]/10' : 'border-slate-300 dark:border-slate-600 hover:border-[#FFB800]'}`}
+        data-testid="gallery-dropzone"
+      >
+        <Upload size={24} className="mx-auto text-slate-400" />
+        <div className="mt-2 text-sm font-semibold text-[#0A2540] dark:text-white">
+          {uploadingKey === 'gallery' ? 'Upload en cours…' : 'Glissez des fichiers ici ou cliquez pour choisir'}
+        </div>
+        <div className="text-xs text-slate-500 mt-1">Images ou vidéos, sélection multiple</div>
+        <input
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+          multiple
+          className="hidden"
+          onChange={(e) => e.target.files.length && onAdd(Array.from(e.target.files))}
+          data-testid="gallery-input"
+        />
+      </label>
+
+      <div className="space-y-2 mt-4" data-testid="gallery-items">
+        {items.map((it, i) => {
+          const isVideo = it.type === 'video';
+          const src = mediaUrl(it.url);
+          const isReplacing = uploadingKey === `gallery-${i}`;
+          return (
+            <div
+              key={i}
+              draggable
+              onDragStart={() => onItemDragStart(i)}
+              onDragOver={onItemDragOver}
+              onDrop={(e) => onItemDrop(e, i)}
+              className={`flex flex-col md:flex-row gap-3 p-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 ${dragIdx === i ? 'opacity-50' : ''}`}
+              data-testid={`gallery-item-${i}`}
+            >
+              <div className="flex items-center gap-2">
+                <div className="cursor-move text-slate-400 select-none px-1" title="Glisser pour réordonner" data-testid={`gallery-drag-${i}`}>⋮⋮</div>
+                <div className="relative w-24 h-20 flex-shrink-0 bg-slate-100 dark:bg-slate-800">
+                  {isVideo ? (
+                    <>
+                      <video src={src} muted playsInline className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <div className="w-7 h-7 bg-[#FFB800] text-[#0A2540] rounded-full flex items-center justify-center text-xs font-bold">▶</div>
+                      </div>
+                    </>
+                  ) : (
+                    <img src={src} alt={it.alt || ''} className="w-full h-full object-cover" />
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+                <input placeholder="Titre" value={it.title || ''} onChange={(e) => onUpdate(i, { title: e.target.value })} className="adm-input" data-testid={`gallery-title-${i}`} />
+                <input placeholder="Catégorie" value={it.category || ''} onChange={(e) => onUpdate(i, { category: e.target.value })} className="adm-input" data-testid={`gallery-category-${i}`} />
+                <input placeholder="Texte alternatif (alt)" value={it.alt || ''} onChange={(e) => onUpdate(i, { alt: e.target.value })} className="adm-input md:col-span-2" data-testid={`gallery-alt-${i}`} />
+                <textarea placeholder="Description" rows={2} value={it.description || ''} onChange={(e) => onUpdate(i, { description: e.target.value })} className="adm-input resize-none md:col-span-2" data-testid={`gallery-desc-${i}`} />
+              </div>
+              <div className="flex md:flex-col items-center gap-2">
+                <label className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap cursor-pointer" data-testid={`gallery-pub-${i}`}>
+                  <input type="checkbox" checked={it.published !== false} onChange={(e) => onUpdate(i, { published: e.target.checked })} />
+                  <span>Publié</span>
+                </label>
+                <label className="adm-btn adm-btn-ghost cursor-pointer text-xs !py-1 !px-2" data-testid={`gallery-replace-${i}`}>
+                  {isReplacing ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                  <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => e.target.files[0] && onReplace(i, e.target.files[0])} />
+                </label>
+                <button onClick={() => onRemove(i)} className="adm-btn adm-btn-danger text-xs !py-1 !px-2" data-testid={`gallery-remove-${i}`}><Trash2 size={12} /></button>
+              </div>
+            </div>
+          );
+        })}
+        {items.length === 0 && (
+          <div className="text-sm text-slate-400 py-6 text-center flex flex-col items-center gap-2 border border-dashed border-slate-200 dark:border-slate-700">
+            <ImageIcon size={24} /> Aucun média
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

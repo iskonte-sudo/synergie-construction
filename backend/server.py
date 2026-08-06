@@ -104,6 +104,28 @@ def _clean(doc: dict) -> dict:
     return doc
 
 
+def _normalize_gallery_item(item, idx=0):
+    """Coerce legacy string gallery entries to full media objects."""
+    if isinstance(item, str):
+        return {'url': item, 'type': 'image', 'title': '', 'description': '', 'alt': '', 'category': '', 'published': True, 'order': idx}
+    if isinstance(item, dict):
+        item.setdefault('type', 'image')
+        item.setdefault('title', '')
+        item.setdefault('description', '')
+        item.setdefault('alt', '')
+        item.setdefault('category', '')
+        item.setdefault('published', True)
+        item.setdefault('order', idx)
+        return item
+    return {'url': str(item), 'type': 'image', 'title': '', 'description': '', 'alt': '', 'category': '', 'published': True, 'order': idx}
+
+
+def _normalize_service_gallery(svc: dict) -> dict:
+    if svc and isinstance(svc.get('gallery'), list):
+        svc['gallery'] = [_normalize_gallery_item(g, i) for i, g in enumerate(svc['gallery'])]
+    return svc
+
+
 # ----------------------- AUTH ROUTES -----------------------
 @api_router.post('/auth/login', response_model=LoginResponse)
 async def login(payload: LoginRequest, request: Request):
@@ -178,7 +200,7 @@ async def list_public_projects():
 @api_router.get('/public/services')
 async def list_public_services():
     items = await db.services.find({'published': True}).sort('order', 1).to_list(100)
-    return [_clean(i) for i in items]
+    return [_normalize_service_gallery(_clean(i)) for i in items]
 
 
 @api_router.get('/public/services/{slug}')
@@ -186,7 +208,7 @@ async def get_public_service(slug: str):
     item = await db.services.find_one({'slug': slug, 'published': True})
     if not item:
         raise HTTPException(404, 'Service introuvable')
-    return _clean(item)
+    return _normalize_service_gallery(_clean(item))
 
 
 @api_router.get('/public/settings')
@@ -413,12 +435,14 @@ async def delete_project(pid: str, user: UserInDB = Depends(require_admin)):
 @api_router.get('/admin/services')
 async def admin_list_services(user: UserInDB = Depends(get_current_user)):
     items = await db.services.find().sort('order', 1).to_list(200)
-    return [_clean(i) for i in items]
+    return [_normalize_service_gallery(_clean(i)) for i in items]
 
 
 @api_router.post('/admin/services', response_model=Service)
 async def create_service(payload: ServiceCreate, user: UserInDB = Depends(get_current_user)):
-    s = Service(**payload.model_dump())
+    data = payload.model_dump()
+    data['gallery'] = [_normalize_gallery_item(g, i) for i, g in enumerate(data.get('gallery') or [])]
+    s = Service(**data)
     await db.services.insert_one(s.model_dump())
     await log_action(user, 'create_service', s.id)
     return s
@@ -427,12 +451,13 @@ async def create_service(payload: ServiceCreate, user: UserInDB = Depends(get_cu
 @api_router.patch('/admin/services/{sid}')
 async def update_service(sid: str, payload: ServiceCreate, user: UserInDB = Depends(get_current_user)):
     upd = payload.model_dump()
+    upd['gallery'] = [_normalize_gallery_item(g, i) for i, g in enumerate(upd.get('gallery') or [])]
     upd['updated_at'] = datetime.utcnow()
     res = await db.services.update_one({'id': sid}, {'$set': upd})
     if res.matched_count == 0:
         raise HTTPException(404, 'Service introuvable')
     await log_action(user, 'update_service', sid)
-    return _clean(await db.services.find_one({'id': sid}))
+    return _normalize_service_gallery(_clean(await db.services.find_one({'id': sid})))
 
 
 @api_router.delete('/admin/services/{sid}')

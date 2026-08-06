@@ -5,6 +5,7 @@ import PageBanner from '../components/PageBanner';
 import { process as steps, company } from '../data/mock';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
 import { useService, useServices } from '../hooks/useServices';
+import { GalleryGrid } from '../components/Lightbox';
 
 const iconMap = { Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck, Building2, Home, Layers, FileText, ShieldCheck, Users };
 
@@ -126,11 +127,7 @@ export default function ServiceDetail() {
             {(service.gallery || []).length > 0 && (
               <>
                 <h3 className="font-heading text-2xl text-[#0A2540] font-bold uppercase mt-12 mb-5">Galerie</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {service.gallery.map((img, i) => (
-                    <img key={i} src={img} alt={`${service.title} ${i + 1}`} className="w-full h-40 object-cover" loading="lazy" data-testid={`gallery-img-${i}`} />
-                  ))}
-                </div>
+                <GalleryGrid items={service.gallery} columns={3} />
               </>
             )}
 

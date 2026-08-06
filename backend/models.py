@@ -139,7 +139,7 @@ class ServiceCreate(BaseModel):
     hero_image: Optional[str] = ''  # Banner image on the detail page
     icon: str = 'Hammer'
     features: List[str] = []
-    gallery: List[str] = []  # Additional images URLs
+    gallery: List[Dict[str, Any]] = []  # [{url, type: image|video, title, description, alt, category, published, order}]
     sub_services: List[Dict[str, Any]] = []  # [{title, description, icon}]
     faqs: List[Dict[str, str]] = []  # [{question, answer}]
     cta_title: Optional[str] = ''
