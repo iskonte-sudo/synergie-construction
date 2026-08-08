@@ -29,15 +29,22 @@ export default function GenericCrudPage({
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get(endpoint);
-      setItems(data);
-    } catch {
-      toast.error('Erreur');
-    }
-    setLoading(false);
+const fetchData = useCallback(async () => {
+  setLoading(true);
+
+  try {
+    const { data } = await api.get(endpoint);
+    setItems(data);
+  } catch {
+    toast.error('Erreur');
+  }
+
+  setLoading(false);
+}, [endpoint]);
+
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
   }, [endpoint]);
   useEffect(() => { fetchData(); }, [fetchData]);
 
