@@ -145,7 +145,7 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
       const fd = new FormData();
       fd.append('file', file);
       fd.append('folder', uploadFolder);
-      const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const { data } = await api.post('/admin/media', fd);
       upd(imageField, data.url);
       toast.success('Image téléchargée');
     } catch { toast.error('Erreur upload'); }
