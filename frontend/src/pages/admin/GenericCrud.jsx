@@ -35,8 +35,13 @@ export default function GenericCrudPage({
     catch { toast.error('Erreur'); }
     setLoading(false);
   };
-  useEffect(() => { fetchData(); /* eslint-disable-next-line */ }, [endpoint]);
+const fetchData = useCallback(async () => {
+  // contenu actuel de fetchData
+}, []);
 
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
   const remove = async (id) => {
     if (!window.confirm('Supprimer définitivement ?')) return;
     await api.delete(`${endpoint}/${id}`);
