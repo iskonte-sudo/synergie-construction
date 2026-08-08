@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Search, Download, X, Trash2, Filter, Phone, Mail, Save, Calendar as CalIcon } from 'lucide-react';
 import api, { API_BASE } from '../../lib/api';
@@ -22,7 +22,7 @@ export default function AdminQuotes() {
   const [toDate, setToDate] = useState('');
   const [selected, setSelected] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -36,9 +36,9 @@ export default function AdminQuotes() {
       toast.error('Erreur de chargement');
     }
     setLoading(false);
-  };
+  }, [status, q, fromDate, toDate]);
 
-  useEffect(() => { fetchData(); /* eslint-disable-next-line */ }, [status, fromDate, toDate]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const doSearch = (e) => { e.preventDefault(); fetchData(); };
 

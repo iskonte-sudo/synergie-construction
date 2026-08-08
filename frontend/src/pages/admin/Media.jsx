@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Upload, Trash2, Search, Copy, X } from 'lucide-react';
 import api, { mediaUrl } from '../../lib/api';
@@ -12,7 +12,7 @@ export default function AdminMedia() {
   const [q, setQ] = useState('');
   const [folder, setFolder] = useState('');
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -23,13 +23,8 @@ export default function AdminMedia() {
     } catch { toast.error('Erreur'); }
     setLoading(false);
   };
-const fetchData = useCallback(async () => {
-  // contenu actuel de fetchData
-}, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-useEffect(() => {
-  fetchData();
-}, [fetchData]);
   const doUpload = async (files) => {
     setUploading(true);
     try {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Search, Trash2, X, Mail, Send, Save, Phone } from 'lucide-react';
 import api from '../../lib/api';
@@ -12,7 +12,7 @@ export default function AdminMessages() {
   const [status, setStatus] = useState('');
   const [selected, setSelected] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -24,15 +24,10 @@ export default function AdminMessages() {
       toast.error('Erreur');
     }
     setLoading(false);
-  };
+  }, [status, q]);
 
-const fetchData = useCallback(async () => {
-  // contenu actuel de fetchData
-}, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-useEffect(() => {
-  fetchData();
-}, [fetchData]);
   const removeItem = async (id) => {
     if (!window.confirm('Supprimer ce message ?')) return;
     await api.delete(`/admin/messages/${id}`);

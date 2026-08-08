@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2, Edit2, X, Save, Upload, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 import api, { mediaUrl } from '../../lib/api';
@@ -29,19 +29,14 @@ export default function GenericCrudPage({
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try { const { data } = await api.get(endpoint); setItems(data); }
     catch { toast.error('Erreur'); }
     setLoading(false);
   };
-const fetchData = useCallback(async () => {
-  // contenu actuel de fetchData
-}, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-useEffect(() => {
-  fetchData();
-}, [fetchData]);
   const remove = async (id) => {
     if (!window.confirm('Supprimer définitivement ?')) return;
     await api.delete(`${endpoint}/${id}`);
@@ -161,14 +156,8 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
   };
 
   return (
-<div
-  className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
-  onClick={(e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }}
->      <div className="bg-white dark:bg-slate-800 dark:text-white w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-slate-800 dark:text-white w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="bg-[#0A2540] text-white p-5 flex items-center justify-between sticky top-0 z-10">
           <h3 className="font-heading text-lg font-extrabold uppercase">{item.id ? 'Modifier' : 'Nouveau'} - {title}</h3>
           <button onClick={onClose} className="w-9 h-9 hover:bg-[#FFB800] hover:text-[#0A2540] flex items-center justify-center"><X size={18} /></button>
