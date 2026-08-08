@@ -26,8 +26,13 @@ export default function AdminMessages() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); /* eslint-disable-next-line */ }, [status]);
+const fetchData = useCallback(async () => {
+  // contenu actuel de fetchData
+}, []);
 
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
   const removeItem = async (id) => {
     if (!window.confirm('Supprimer ce message ?')) return;
     await api.delete(`/admin/messages/${id}`);
