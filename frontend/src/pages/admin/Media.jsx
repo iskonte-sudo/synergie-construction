@@ -34,8 +34,8 @@ export default function AdminMedia() {
         const fd = new FormData();
         fd.append('file', file);
         fd.append('folder', folder || 'general');
-        await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      }
+await api.post('/admin/media', fd);
+    }
       toast.success('Upload terminé');
       fetchData();
     } catch { toast.error('Erreur upload'); }
