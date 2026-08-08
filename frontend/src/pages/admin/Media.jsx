@@ -13,16 +13,20 @@ export default function AdminMedia() {
   const [folder, setFolder] = useState('');
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = {};
-      if (q) params.q = q;
-      if (folder) params.folder = folder;
-      const { data } = await api.get('/admin/media', { params });
-      setItems(data);
-    } catch { toast.error('Erreur'); }
-    setLoading(false);
-  };
+  setLoading(true);
+  try {
+    const params = {};
+    if (q) params.q = q;
+    if (folder) params.folder = folder;
+
+    const { data } = await api.get('/admin/media', { params });
+    setItems(data);
+  } catch {
+    toast.error('Erreur');
+  }
+
+  setLoading(false);
+}, [q, folder]);
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const doUpload = async (files) => {
