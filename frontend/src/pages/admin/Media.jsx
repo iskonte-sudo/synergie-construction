@@ -23,8 +23,13 @@ export default function AdminMedia() {
     } catch { toast.error('Erreur'); }
     setLoading(false);
   };
-  useEffect(() => { fetchData(); /* eslint-disable-next-line */ }, [folder]);
+const fetchData = useCallback(async () => {
+  // contenu actuel de fetchData
+}, []);
 
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
   const doUpload = async (files) => {
     setUploading(true);
     try {
