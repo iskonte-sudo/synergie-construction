@@ -42,10 +42,9 @@ export default function GenericCrudPage({
     setLoading(false);
   }, [endpoint]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-  useEffect(() => { fetchData(); }, [fetchData]);
+ useEffect(() => {
+  fetchData();
+}, [fetchData]);
 
   const remove = async (id) => {
     if (!window.confirm('Supprimer définitivement ?')) return;
