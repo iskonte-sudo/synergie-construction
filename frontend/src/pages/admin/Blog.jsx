@@ -4,6 +4,7 @@ import { Loader2, Plus, Trash2, Edit2, X, Save, Upload, Eye } from 'lucide-react
 import api, { mediaUrl } from '../../lib/api';
 import { PageHeader, formatDate } from './Dashboard';
 import { Field } from './Projects';
+import useBackdropCloseGuard from '../../hooks/useBackdropCloseGuard';
 import './admin.css';
 
 const EMPTY = {
@@ -112,7 +113,7 @@ function BlogForm({ item, onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" {...useBackdropCloseGuard(onClose)}>
       <div className="bg-white dark:bg-slate-800 dark:text-white w-full max-w-4xl max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="bg-[#0A2540] text-white p-5 flex items-center justify-between sticky top-0 z-10">
           <h3 className="font-heading text-lg font-extrabold uppercase">{item.id ? 'Modifier' : 'Nouvel'} article</h3>
