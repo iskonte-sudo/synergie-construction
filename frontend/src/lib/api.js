@@ -6,7 +6,6 @@ export const MEDIA_BASE = BACKEND_URL;
 
 const api = axios.create({
   baseURL: API_BASE,
-  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use((config) => {
