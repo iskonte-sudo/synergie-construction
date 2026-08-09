@@ -156,9 +156,15 @@ function ProjectForm({ item, onClose, onSaved }) {
 }
 
 export function Field({ label, required, children }) {
-  return <label className="block"><span className="adm-label">{label} {required && <span className="text-[#FFB800]">*</span>}</span>{children}</label>;
+  return (
+    <div>
+      <div className="mb-1 text-sm font-medium">
+        {label} {required && '*'}
+      </div>
+      {children}
+    </div>
+  );
 }
-
 function ImageList({ label, items, onRemove, onAdd, uploading }) {
   return (
     <div>
