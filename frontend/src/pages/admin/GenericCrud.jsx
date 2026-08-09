@@ -183,13 +183,40 @@ toast.success('Image téléchargée');
                     {fld.options.map((o) => <option key={o.value || o} value={o.value || o}>{o.label || o}</option>)}
                   </select>
                 ) : fld.type === 'image' ? (
-                  <div>
-                    {f[fld.name] && <div className="mb-2"><img src={mediaUrl(f[fld.name])} alt="" className="h-24 object-cover border border-slate-200 dark:border-slate-700" /></div>}
-                    <label className="adm-btn adm-btn-ghost cursor-pointer">
-                      <Upload size={14} /> {uploading ? 'Upload...' : 'Choisir une image'}
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && uploadImage(e.target.files[0])} />
-                    </label>
-                  </div>
+  <div>
+    {f[fld.name] && (
+      <div className="mb-3">
+        <img
+          src={mediaUrl(f[fld.name])}
+          alt=""
+          className="w-full max-h-48 object-cover border border-slate-200 rounded"
+        />
+      </div>
+    )}
+
+    <button
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      disabled={uploading}
+      className="adm-btn adm-btn-ghost inline-flex items-center gap-2"
+    >
+      <Upload size={14} />
+      {uploading ? 'Upload...' : 'Choisir une image'}
+    </button>
+
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept="image/*"
+      className="hidden"
+      disabled={uploading}
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) uploadImage(file);
+        e.target.value = '';
+      }}
+    />
+  </div>
                 ) : fld.type === 'checkbox' ? (
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={!!f[fld.name]} onChange={(e) => upd(fld.name, e.target.checked)} />
