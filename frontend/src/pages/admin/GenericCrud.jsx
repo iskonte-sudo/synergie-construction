@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2, Edit2, X, Save, Upload, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 import api, { mediaUrl } from '../../lib/api';
@@ -136,6 +136,7 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
   const [f, setF] = useState(item);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
 const upd = (k, v) => setF(prev => ({ ...prev, [k]: v }));
   const uploadImage = async (file) => {
