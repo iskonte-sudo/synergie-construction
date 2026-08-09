@@ -137,8 +137,7 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const upd = (k, v) => setF({ ...f, [k]: v });
-
+const upd = (k, v) => setF(prev => ({ ...prev, [k]: v }));
   const uploadImage = async (file) => {
     setUploading(true);
     try {
@@ -146,8 +145,8 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
       fd.append('file', file);
       fd.append('folder', uploadFolder);
       const { data } = await api.post('/admin/media', fd);
-      upd(imageField, data.url);
-      toast.success('Image téléchargée');
+setF(prev => ({ ...prev, [imageField]: data.url }));
+toast.success('Image téléchargée');
     } catch { toast.error('Erreur upload'); }
     setUploading(false);
   };
