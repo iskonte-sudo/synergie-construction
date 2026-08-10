@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { Loader2, Plus, Trash2, Edit2, X, Save, Upload, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 import api, { mediaUrl } from '../../lib/api';
 import { PageHeader } from './Dashboard';
-import { Field } from './Projects';
 import './admin.css';
 
 const STAR = '★';
@@ -178,8 +177,10 @@ toast.success('Image téléchargée');
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           {fields.map((fld) => (
             <div key={fld.name} className={fld.full ? 'md:col-span-2' : ''}>
-              <Field label={fld.label} required={fld.required}>
-                {fld.type === 'textarea' ? (
+<div>
+  <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
+    {fld.label} {fld.required && <span className="text-red-500">*</span>}
+  </div>                {fld.type === 'textarea' ? (
                   <textarea rows={fld.rows || 4} required={fld.required} value={f[fld.name] || ''} onChange={(e) => upd(fld.name, e.target.value)} className="adm-input resize-none" placeholder={fld.placeholder} />
                 ) : fld.type === 'select' ? (
                   <select value={f[fld.name] || ''} onChange={(e) => upd(fld.name, e.target.value)} className="adm-input">
@@ -237,7 +238,7 @@ toast.success('Image téléchargée');
                   />
                 )}
                 {fld.help && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{fld.help}</p>}
-              </Field>
+</div>
             </div>
           ))}
 
