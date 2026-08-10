@@ -138,22 +138,44 @@ function GenericForm({ item, fields, imageField, uploadFolder, onClose, onSaved,
   const fileInputRef = useRef(null);
 
 const upd = (k, v) => setF(prev => ({ ...prev, [k]: v }));
-  const uploadImage = async (file) => {
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('folder', uploadFolder);
-      const { data } = await api.post('/admin/media', fd);
+ const uploadImage = async (file) => {
+  setUploading(true);
 
-console.log('UPLOAD OK', data);
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', uploadFolder);
 
-setF(prev => ({ ...prev, [imageField]: data.url }));
+    const { data } = await api.post('/admin/media', fd);
 
-toast.success('Image téléchargée');
-    } catch { toast.error('Erreur upload'); }
+    console.log('UPLOAD OK', data);
+
+    setF(prev => ({
+      ...prev,
+      [imageField]: data.url,
+    }));
+
+    toast.success('Image téléchargée');
+  } catch (e) {
+    console.error('UPLOAD ERROR', e);
+    toast.error(e?.response?.data?.detail || 'Erreur upload');
+  } finally {
     setUploading(false);
-  };
+  }
+};
+
+const handleFileChange = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const file = e.target.files?.[0];
+
+  if (!file) return;
+
+  await uploadImage(file);
+
+  e.target.value = '';
+};
 
   const save = async () => {
     setSaving(true);
@@ -183,10 +205,23 @@ toast.success('Image téléchargée');
   </div>                {fld.type === 'textarea' ? (
                   <textarea rows={fld.rows || 4} required={fld.required} value={f[fld.name] || ''} onChange={(e) => upd(fld.name, e.target.value)} className="adm-input resize-none" placeholder={fld.placeholder} />
                 ) : fld.type === 'select' ? (
-                  <select value={f[fld.name] || ''} onChange={(e) => upd(fld.name, e.target.value)} className="adm-input">
-                    <option value="">--</option>
-                    {fld.options.map((o) => <option key={o.value || o} value={o.value || o}>{o.label || o}</option>)}
-                  </select>
+  <select
+    value={f[fld.name] || ''}
+    onChange={(e) => upd(fld.name, e.target.value)}
+    className="adm-input"
+  >
+    <option value="">--</option>
+    {fld.options.map((o) => (
+      <option
+        key={o.value || o}
+        value={o.value || o}
+      >
+        {o.label || o}
+      </option>
+    ))}
+  </select>
+
+
                 ) : fld.type === 'image' ? (
   <div>
     {f[fld.name] && (
@@ -201,8 +236,11 @@ toast.success('Image téléchargée');
 
     <button
       type="button"
-      onClick={() => fileInputRef.current?.click()}
-      disabled={uploading}
+onClick={(e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  fileInputRef.current?.click();
+}}      disabled={uploading}
       className="adm-btn adm-btn-ghost inline-flex items-center gap-2"
     >
       <Upload size={14} />
@@ -215,11 +253,8 @@ toast.success('Image téléchargée');
       accept="image/*"
       className="hidden"
       disabled={uploading}
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (file) uploadImage(file);
-        e.target.value = '';
-      }}
+      onChange={handleFileChange}
+onClick={(e) => e.stopPropagation()}
     />
   </div>
                 ) : fld.type === 'checkbox' ? (
