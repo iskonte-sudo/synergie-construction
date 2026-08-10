@@ -146,7 +146,11 @@ const upd = (k, v) => setF(prev => ({ ...prev, [k]: v }));
       fd.append('file', file);
       fd.append('folder', uploadFolder);
       const { data } = await api.post('/admin/media', fd);
+
+console.log('UPLOAD OK', data);
+
 setF(prev => ({ ...prev, [imageField]: data.url }));
+
 toast.success('Image téléchargée');
     } catch { toast.error('Erreur upload'); }
     setUploading(false);
