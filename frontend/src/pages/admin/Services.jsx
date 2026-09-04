@@ -357,28 +357,52 @@ function ServiceForm({ item, onClose, onSaved }) {
 }
 
 function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
-  const inputId = `upload-${testid}`;
+  const inputRef = useRef(null);
 
   const handleChange = (e) => {
     e.preventDefault();
     e.stopPropagation();
+
     const file = e.target.files?.[0];
-    if (file) onUpload(file);
+
+    if (file) {
+      onUpload(file);
+    }
+
+    // Permet de sélectionner à nouveau le même fichier
     e.target.value = '';
   };
 
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    document.getElementById(inputId)?.click();
+
+    if (!uploading) {
+      inputRef.current?.click();
+    }
   };
 
   return (
     <Field label={label}>
       {value && (
         <div className="mb-2 relative inline-block">
-          <img src={mediaUrl(value)} alt="" className="h-32 object-cover border border-slate-200 dark:border-slate-700" />
-          <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClear(); }} className="absolute top-1 right-1 bg-red-600 text-white p-1"><X size={12} /></button>
+          <img
+            src={mediaUrl(value)}
+            alt=""
+            className="h-32 object-cover border border-slate-200 dark:border-slate-700"
+          />
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClear();
+            }}
+            className="absolute top-1 right-1 bg-red-600 text-white p-1"
+          >
+            <X size={12} />
+          </button>
         </div>
       )}
 
@@ -389,15 +413,19 @@ function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
         onClick={handleClick}
         disabled={uploading}
       >
-        <Upload size={14} /> {uploading ? 'Upload...' : (value ? 'Remplacer' : 'Choisir')}
+        <Upload size={14} />
+        {uploading ? 'Upload...' : value ? 'Remplacer' : 'Choisir'}
       </button>
 
       <input
-        id={inputId}
+        ref={inputRef}
         type="file"
         accept="image/*"
         className="hidden"
         onChange={handleChange}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
       />
     </Field>
   );
