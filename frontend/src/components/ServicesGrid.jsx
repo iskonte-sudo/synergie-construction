@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck, FileText, Building2, Home } from 'lucide-react';
 import { useServices } from '../hooks/useServices';
+import { mediaUrl } from '../lib/api';
 import { useQuoteModal } from '../contexts/QuoteModalContext';
 
 const iconMap = { Hammer, HardHat, Wrench, Truck, PenTool, ClipboardCheck, Building2, Home };
@@ -34,7 +35,7 @@ export default function ServicesGrid({ dark = false }) {
                 className="service-card group relative bg-white overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl flex flex-col"
               >
                 <Link to={`/services/${s.slug}`} className="block relative h-56 overflow-hidden bg-gray-100">
-<img src={s.image} alt={s.title} loading="lazy" className="card-img w-full h-full object-cover" />                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A2540]/70 to-transparent" />
+<img src={mediaUrl(s.image)} alt={s.title} loading="lazy" className="card-img w-full h-full object-cover" />                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A2540]/70 to-transparent" />
                   <div className="absolute top-4 left-4 w-12 h-12 bg-[#FFB800] flex items-center justify-center text-[#0A2540]">
                     <Icon size={22} />
                   </div>
