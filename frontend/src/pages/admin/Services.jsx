@@ -92,7 +92,7 @@ function ServiceForm({ item, onClose, onSaved }) {
     try {
       const fd = new FormData();
       fd.append('file', file); fd.append('folder', 'services');
-      const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const { data } = await api.post('/admin/media', fd);
       upd(key, data.url);
     } catch { toast.error('Erreur upload'); }
     setUploadingKey(null);
@@ -107,7 +107,7 @@ function ServiceForm({ item, onClose, onSaved }) {
       try {
         const fd = new FormData();
         fd.append('file', file); fd.append('folder', 'services');
-        const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        const { data } = await api.post('/admin/media', fd);
         const isVideo = (file.type || '').startsWith('video/');
         newItems.push({
           url: data.url,
@@ -127,7 +127,7 @@ function ServiceForm({ item, onClose, onSaved }) {
     try {
       const fd = new FormData();
       fd.append('file', file); fd.append('folder', 'services');
-      const { data } = await api.post('/admin/media', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const { data } = await api.post('/admin/media', fd);
       const isVideo = (file.type || '').startsWith('video/');
       upd('gallery', f.gallery.map((it, i) => i === idx ? { ...it, url: data.url, type: isVideo ? 'video' : 'image' } : it));
     } catch { toast.error('Erreur remplacement'); }
@@ -191,7 +191,7 @@ function ServiceForm({ item, onClose, onSaved }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-800 dark:text-white w-full max-w-4xl max-h-[92vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="bg-[#0A2540] text-white p-5 flex items-center justify-between sticky top-0 z-10">
           <h3 className="font-heading text-lg font-extrabold uppercase">{item.id ? 'Modifier' : 'Nouveau'} service</h3>
