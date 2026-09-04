@@ -75,8 +75,18 @@ export default function AdminServices() {
         </div>
       }
 
-      {editing && <ServiceForm item={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); fetchData(); }} />}
-    </div>
+{editing && (
+  <ServiceForm
+    item={editing}
+    onClose={() => {
+      setEditing(null);
+    }}
+    onSaved={() => {
+      setEditing(null);
+      fetchData();
+    }}
+  />
+)}    </div>
   );
 }
 

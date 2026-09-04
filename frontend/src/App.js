@@ -70,8 +70,7 @@ function SettingsBootstrapper({ children }) {
     window.addEventListener('focus', onFocus);
     return () => { alive = false; window.removeEventListener('focus', onFocus); };
   }, []);
-  return <React.Fragment key={tick}>{children}</React.Fragment>;
-}
+return <>{children}</>;}
 
 function PublicLayout({ children }) {
   return (
