@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Plus, Trash2, Edit2, X, Save, Upload, Star, Image as ImageIcon } from 'lucide-react';
 import api, { mediaUrl } from '../../lib/api';
