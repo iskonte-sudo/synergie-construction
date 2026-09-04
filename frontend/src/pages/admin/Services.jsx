@@ -360,7 +360,6 @@ function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
   const inputRef = useRef(null);
 
   const handleChange = (e) => {
-    e.preventDefault();
     e.stopPropagation();
 
     const file = e.target.files?.[0];
@@ -369,17 +368,12 @@ function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
       onUpload(file);
     }
 
-    // Permet de sélectionner à nouveau le même fichier
     e.target.value = '';
   };
 
   const handleClick = (e) => {
-    e.preventDefault();
     e.stopPropagation();
-
-    if (!uploading) {
-      inputRef.current?.click();
-    }
+    inputRef.current?.click();
   };
 
   return (
@@ -395,7 +389,6 @@ function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
           <button
             type="button"
             onClick={(e) => {
-              e.preventDefault();
               e.stopPropagation();
               onClear();
             }}
@@ -406,27 +399,30 @@ function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
         </div>
       )}
 
-      <button
-        type="button"
-        className="adm-btn adm-btn-ghost cursor-pointer"
-        data-testid={testid}
-        onClick={handleClick}
-        disabled={uploading}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
-        <Upload size={14} />
-        {uploading ? 'Upload...' : value ? 'Remplacer' : 'Choisir'}
-      </button>
+        <button
+          type="button"
+          className="adm-btn adm-btn-ghost cursor-pointer"
+          data-testid={testid}
+          onClick={handleClick}
+          disabled={uploading}
+        >
+          <Upload size={14} />
+          {uploading ? 'Upload...' : value ? 'Remplacer' : 'Choisir'}
+        </button>
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleChange}
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      />
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleChange}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
     </Field>
   );
 }
