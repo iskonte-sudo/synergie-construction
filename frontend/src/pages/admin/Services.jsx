@@ -357,18 +357,48 @@ function ServiceForm({ item, onClose, onSaved }) {
 }
 
 function ImageField({ label, value, uploading, onUpload, onClear, testid }) {
+  const inputId = `upload-${testid}`;
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.target.files?.[0];
+    if (file) onUpload(file);
+    e.target.value = '';
+  };
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById(inputId)?.click();
+  };
+
   return (
     <Field label={label}>
       {value && (
         <div className="mb-2 relative inline-block">
           <img src={mediaUrl(value)} alt="" className="h-32 object-cover border border-slate-200 dark:border-slate-700" />
-          <button onClick={onClear} className="absolute top-1 right-1 bg-red-600 text-white p-1"><X size={12} /></button>
+          <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClear(); }} className="absolute top-1 right-1 bg-red-600 text-white p-1"><X size={12} /></button>
         </div>
       )}
-      <label className="adm-btn adm-btn-ghost cursor-pointer" data-testid={testid}>
+
+      <button
+        type="button"
+        className="adm-btn adm-btn-ghost cursor-pointer"
+        data-testid={testid}
+        onClick={handleClick}
+        disabled={uploading}
+      >
         <Upload size={14} /> {uploading ? 'Upload...' : (value ? 'Remplacer' : 'Choisir')}
-        <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && onUpload(e.target.files[0])} />
-      </label>
+      </button>
+
+      <input
+        id={inputId}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleChange}
+      />
     </Field>
   );
 }
