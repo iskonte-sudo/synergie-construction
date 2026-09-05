@@ -9,8 +9,28 @@ import FAQSection from '../components/FAQSection';
 import QuoteForm from '../components/QuoteForm';
 import Simulator from './Simulator';
 import { company, process as steps } from '../data/mock';
+import { useContent } from '../hooks/useContent';
+import { mediaUrl } from '../lib/api';
 
-export default function Home() {
+  export default function Home() {
+  const { t } = useContent();
+
+  const aboutImage = mediaUrl(
+    t(
+      'home.about.image',
+      
+'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80'
+    )
+  );
+
+  const processBackgroundImage = mediaUrl(
+    t(
+      'home.process.background_image',
+      
+'https://images.unsplash.com/photo-1508450859948-4e04fabaa4ea?auto=format&fit=crop&w=1920&q=80'
+    )
+  );
+
   return (
     <>
       <HeroSlider />
@@ -65,7 +85,8 @@ export default function Home() {
       {/* CTA + Form */}
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1508450859948-4e04fabaa4ea?auto=format&fit=crop&w=1920&q=80" alt="" className="w-full h-full object-cover" />
+          src={processBackgroundImage} alt="" className="w-full h-full 
+object-cover" />
           <div className="absolute inset-0 bg-[#0A2540]/92" />
         </div>
         <div className="relative max-w-[1400px] mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
