@@ -634,8 +634,11 @@ async def upload_media(
             f.write(data)
         logger.warning(f'Object storage unavailable — saved locally: {file_path}')
 
-    # URL is always the same shape so the frontend does not need to change
-    url = f"/api/uploads/{folder}/{name}"
+    if obj_result and obj_result.get('url'):
+        url = obj_result['url']
+    else:
+        url = f"/api/uploads/{folder}/{name}"
+
     media = Media(
         name=file.filename, url=url, mime=mime,
         size=size, folder=folder, uploaded_by=user.email,
